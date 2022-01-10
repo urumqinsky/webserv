@@ -4,3 +4,8 @@ https://www.boost.org/doc/libs/1_78_0/doc/html/boost_asio/examples/cpp03_example
 https://vk.com/wall-174211858_192
 https://lectureswww.readthedocs.io/5.web.server/cgi.html
 https://rtfm.co.ua/c-sokety-i-primer-modeli-client-server/
+https://developer.mozilla.org/ru/docs/Web/HTTP/Cookies
+https://github.com/frevib/kqueue-tcp-server
+https://www.opennet.ru/base/dev/kevent_freebsd.txt.html
+http://eradman.com/posts/kqueue-tcp.html
+https://rsdn.org/article/unix/sockets.xml

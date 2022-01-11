@@ -9,3 +9,4 @@ https://github.com/frevib/kqueue-tcp-server
 https://www.opennet.ru/base/dev/kevent_freebsd.txt.html
 http://eradman.com/posts/kqueue-tcp.html
 https://rsdn.org/article/unix/sockets.xml
+https://man.openbsd.org/kevent.2

@@ -140,7 +140,7 @@ CMAKE_PROJECT_DESCRIPTION:STATIC=
 CMAKE_PROJECT_HOMEPAGE_URL:STATIC=
 
 //Value Computed by CMake
-CMAKE_PROJECT_NAME:STATIC=Project
+CMAKE_PROJECT_NAME:STATIC=webserv
 
 //Path to a program.
 CMAKE_RANLIB:FILEPATH=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib
@@ -212,6 +212,15 @@ Project_IS_TOP_LEVEL:STATIC=ON
 
 //Value Computed by CMake
 Project_SOURCE_DIR:STATIC=/Users/rlando/Desktop/webserv
+
+//Value Computed by CMake
+webserv_BINARY_DIR:STATIC=/Users/rlando/Desktop/webserv/cmake-build-debug
+
+//Value Computed by CMake
+webserv_IS_TOP_LEVEL:STATIC=ON
+
+//Value Computed by CMake
+webserv_SOURCE_DIR:STATIC=/Users/rlando/Desktop/webserv
 
 
 ########################

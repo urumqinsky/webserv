@@ -11,7 +11,7 @@
 # =============================================================================
 
 # =============================================================================
-# Project: Project
+# Project: webserv
 # Configurations: Debug
 # =============================================================================
 
@@ -64,6 +64,38 @@ build CMakeFiles/edit_cache.util: CUSTOM_COMMAND
 build edit_cache: phony CMakeFiles/edit_cache.util
 
 # =============================================================================
+# Object build statements for EXECUTABLE target webserv
+
+
+#############################################
+# Order-only phony target for webserv
+
+build cmake_object_order_depends_target_webserv: phony || CMakeFiles/webserv.dir
+
+build CMakeFiles/webserv.dir/test.cpp.o: CXX_COMPILER__webserv_Debug /Users/rlando/Desktop/webserv/test.cpp || cmake_object_order_depends_target_webserv
+  DEP_FILE = CMakeFiles/webserv.dir/test.cpp.o.d
+  FLAGS = -g -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk -mmacosx-version-min=10.14 -std=gnu++98
+  INCLUDES = -I/Users/rlando/Desktop/webserv/.
+  OBJECT_DIR = CMakeFiles/webserv.dir
+  OBJECT_FILE_DIR = CMakeFiles/webserv.dir
+
+
+# =============================================================================
+# Link build statements for EXECUTABLE target webserv
+
+
+#############################################
+# Link the executable webserv
+
+build webserv: CXX_EXECUTABLE_LINKER__webserv_Debug CMakeFiles/webserv.dir/test.cpp.o
+  FLAGS = -g -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk -mmacosx-version-min=10.14
+  OBJECT_DIR = CMakeFiles/webserv.dir
+  POST_BUILD = :
+  PRE_LINK = :
+  TARGET_FILE = webserv
+  TARGET_PDB = webserv.dbg
+
+# =============================================================================
 # Target aliases.
 
 # =============================================================================
@@ -74,12 +106,7 @@ build edit_cache: phony CMakeFiles/edit_cache.util
 #############################################
 # Folder: /Users/rlando/Desktop/webserv/cmake-build-debug
 
-build all: phony
-
-# =============================================================================
-# Unknown Build Time Dependencies.
-# Tell Ninja that they may appear as side effects of build rules
-# otherwise ordered by order-only dependencies.
+build all: phony webserv
 
 # =============================================================================
 # Built-in targets

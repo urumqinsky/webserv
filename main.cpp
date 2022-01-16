@@ -1,27 +1,29 @@
 #include "ServerSocket.hpp"
-#include "serverconfig.hpp"
+#include "ServerConfig.hpp"
 
 void	makeQueue(ServerSocket *servSockets, int nPorst);
 
 int		main(int argc, char *argv[])
 {
-	(void)argv;
-	(void)argc;
-	// if (argc != 2)
-	// {
-	// 	std::cout << "Invalid input arguments" << std::endl;
-	// 	exit(1);
-	// }
-	// Config file parser
-	int nPorts = 2;
-	Config	cfgs[nPorts]; // for example
+	// (void)argv;
+	// (void)argc;
+	if (argc != 2)
+	{
+		std::cout << "Invalid input arguments" << std::endl;
+		exit(1);
+	}
+	// parseConfigFile(argv[2]);
+	// int nPorts = 2;
+	// Config	cfgs[nPorts]; // for example
 
-	cfgs[0].ip = "127.0.0.1";
-	cfgs[0].port = 8083;
-	cfgs[1].ip = "127.0.0.1";
-	cfgs[1].port = 9090;
+	// cfgs[0].ip = "127.0.0.1";
+	// cfgs[0].port = 8083;
+	// cfgs[1].ip = "127.0.0.1";
+	// cfgs[1].port = 9090;
+	ServerConfig	sConfig;
 
-	ServerSocket	servSockets[nPorts];
+	sConfig.parseConfigFile(argv[1]);
+	ServerSocket	servSockets[sConfig.listenIpPorts.size];
 
 	for (int i = 0; i < nPorts; i++)
 	{
@@ -64,6 +66,13 @@ void	watch_loop(int kq, ServerSocket *sSockets, int nPorts)
 	int					eventNumber, newEventFd;
 	struct sockaddr_in	addr;
 	socklen_t			addrLen = sizeof(addr);
+
+	int nbuf = 5000000;
+	char buf[nbuf];
+	for (int i = 0; i < nbuf; i++)
+		buf[i] = '*';
+	buf[nbuf - 2] = '$';
+	buf[nbuf - 1] = '\0';
 	while (1)
 	{
 		eventNumber = kevent(kq, NULL, 0, eventList, 1024, NULL);
@@ -105,7 +114,7 @@ void	watch_loop(int kq, ServerSocket *sSockets, int nPorts)
 				recv_msg(eventList[i].ident); //read from socket
 				//считать с сокета запрос от клиента
 				//обработать запрос и отправить ответ
-				send(eventList[i].ident, (const void*)"Hello from server\n", 18, 0);
+				send(eventList[i].ident, (const void*)buf, sizeof(buf), 0);
 			}
 		}
 	}

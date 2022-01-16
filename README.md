@@ -11,3 +11,4 @@ https://www.opennet.ru/base/dev/kevent_freebsd.txt.html
 http://eradman.com/posts/kqueue-tcp.html
 https://rsdn.org/article/unix/sockets.xml
 https://man.openbsd.org/kevent.2
+https://stackoverflow.com/questions/64245246/how-to-add-a-kevent-to-a-kqueuewhile-kevent-is-locked

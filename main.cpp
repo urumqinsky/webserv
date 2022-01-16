@@ -106,6 +106,7 @@ void	watch_loop(int kq, ServerSocket *sSockets, int nPorts)
 				std::cout << "size = " << (unsigned int)(eventList[i].data) << std::endl;
 				recv_msg(eventList[i].ident); //read from socket
 				//считать с сокета запрос от клиента
+				
 				//обработать запрос 
 
 				send(eventList[i].ident, (const void*)"Hello from server\n", 18, 0);

@@ -6,12 +6,14 @@
 # include <netdb.h>
 # include <netinet/in.h>
 # include <arpa/inet.h>
-# include <sys/event.h>
+// # include <sys/event.h>
 # include <unistd.h>
 
 # include <cstdlib>
 # include <cstring>
 # include <iostream>
 # include <stdexcept>
+# include <fstream>
+# include <string>
 
 #endif

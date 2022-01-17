@@ -3,42 +3,32 @@
 
 void	makeQueue(ServerSocket *servSockets, int nPorst);
 
-int		main(int argc, char *argv[])
+int		main(int argc, char *argv[], char *env[])
 {
-	// (void)argv;
-	// (void)argc;
 	if (argc != 2)
 	{
 		std::cout << "Invalid input arguments" << std::endl;
 		exit(1);
 	}
-	// parseConfigFile(argv[2]);
-	// int nPorts = 2;
-	// Config	cfgs[nPorts]; // for example
+	std::string filename = std::string(std::getenv("PWD")) + "/" + std::string(argv[1]);
+	ServerConfig	sConfig(filename.c_str);
+	
+	// ServerSocket	servSockets[sConfig.listenIpPorts.size];
 
-	// cfgs[0].ip = "127.0.0.1";
-	// cfgs[0].port = 8083;
-	// cfgs[1].ip = "127.0.0.1";
-	// cfgs[1].port = 9090;
-	ServerConfig	sConfig;
-
-	sConfig.parseConfigFile(argv[1]);
-	ServerSocket	servSockets[sConfig.listenIpPorts.size];
-
-	for (int i = 0; i < nPorts; i++)
-	{
-		try
-		{
-			servSockets[i].setSocketForListen(*(cfgs[i].ip), cfgs[i].port);
-		}
-		catch(const std::runtime_error & e)
-		{
-			std::cerr << e.what() << '\n';
-			return (1);
-		}
-	}
-	makeQueue(servSockets, nPorts);
-	return (0);
+	// for (int i = 0; i < nPorts; i++)
+	// {
+	// 	try
+	// 	{
+	// 		servSockets[i].setSocketForListen(*(cfgs[i].ip), cfgs[i].port);
+	// 	}
+	// 	catch(const std::runtime_error & e)
+	// 	{
+	// 		std::cerr << e.what() << '\n';
+	// 		return (1);
+	// 	}
+	// }
+	// makeQueue(servSockets, nPorts);
+	// return (0);
 }
 
 void recv_msg(int fd)

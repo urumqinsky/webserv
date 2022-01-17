@@ -3,6 +3,7 @@
 
 # include <string>
 # include <vector>
+# include <map>
 
 struct generalContext
 {
@@ -10,17 +11,18 @@ struct generalContext
 	size_t						BodySizeMax;
 	std::string					root;
 	bool						autoindex;
+	std::map<int, std::string>	error_page;
 };
 
 struct locationContex
 {
 	std::vector<std::string>			lockArgs;
-	std::vector<std::string>			allowedMethods;
+	std::vector<std::string>			methods;
 	std::string							cgiPath;
 	std::string							cgiExtension;
 	std::vector<struct locationContext>	lockListL;
 	std::string							alias;
-	struct generalContext				generalL;
+	struct generalContext				genL;
 };
 
 struct serverContext
@@ -29,16 +31,14 @@ struct serverContext
 	int								port;
 	std::string						server_name;
 	std::vector<locationContext>	lockListS;
-	struct generalContext			generalS;
+	struct generalContext			genS;
 
 };
 
 struct httpContext
 {
 	std::vector<serverContext>	serverList;
-	std::vector<std::string>	error_pages;
-	struct generalContext		generalH;
-
+	struct generalContext		genH;
 };
 
 struct listenIpPort
@@ -53,14 +53,13 @@ public:
 	ServerConfig(const char *str);
 	~ServerConfig();
 	ServerConfig(const ServerConfig &other);
-	const ServerConfig &operator=(const ServerConfig &other);
-	void parseConfigFile(const char *str);
-
+	const ServerConfig	&operator=(const ServerConfig &other);
+	void				parseConfigFile(const char *filename);
 
 private:
 	ServerConfig();
-	httpContext	httpCont;
-	std::vector<listenIpPort> listenIpPorts;
+	httpContext					httpCont;
+	std::vector<listenIpPort>	listenIpPorts;
 };
 
 #endif

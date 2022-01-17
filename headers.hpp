@@ -14,5 +14,6 @@
 # include <iostream>
 # include <stdexcept>
 # include <map>
+# include <fstream>
 
 #endif

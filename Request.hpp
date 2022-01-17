@@ -12,7 +12,7 @@ public:
 
 	std::string const &getIPport();
 	void setIPport(int IPport);
-	void parseFd(int fd);
+	void parseFd(std::string req);
 
 private:
 	std::string IPport;

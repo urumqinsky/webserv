@@ -4,5 +4,15 @@
 
 int main(){
     Request test;
-    test.parseFd(3);
+
+    std::string requestText;
+    // char buf[1024];
+    // std::fstream fs;
+    // fs.open("test.txt", std::fstream::out);
+    // std::cin.getline(buf, 1024);
+    // requestText = buf;
+    // fs.close();
+    // std::cout << requestText;
+    requestText = "GET  / HTTP/1.1\nHost: http.maxkuznetsov.ru";
+    test.parseFd(requestText);
 }

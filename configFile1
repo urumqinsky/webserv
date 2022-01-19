@@ -54,7 +54,7 @@ server   {
 		cgi ../Tester/cgi_tester;
 		cgi_extension .bla;
 	}
-	location / /put_test//* {
+	location / /put_test/* {
 		allow PUT;
 		autoindex off;
 		alias ../Tester/YoupiBanane;
@@ -80,10 +80,8 @@ server {
         autoindex on;
         root ../Tester;
     }
-    location /site
-    {
+    location /site {
     	autoindex on;
-    	users amVsZG9yYTphZG1pbg== bHRoZXJlc2k6YWRtaW4=;
     	root ../Tester;
     }
 }

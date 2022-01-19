@@ -4,8 +4,6 @@ cmake-build-debug
 
 # Prerequisites
 *.d
-cmake*
-.idea
 
 # Compiled Object files
 *.slo

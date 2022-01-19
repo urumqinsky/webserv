@@ -1,9 +1,6 @@
 #ifndef SERVERCONFIG_HPP
 # define SERVERCONFIG_HPP
 
-# include <string>
-# include <vector>
-# include <map>
 # include "headers.hpp"
 
 struct	genCont
@@ -49,6 +46,8 @@ struct	lIpPort
 {
 	std::string	ip;
 	int			port;
+	lIpPort();
+	bool operator==(const lIpPort &other);
 };
 
 class ServerConfig
@@ -69,6 +68,7 @@ private:
 	serCont						parseServer(std::ifstream &in, std::string &line);
 	locCont						parseLocation(std::ifstream &in, std::string &line, std::vector<std::string> splitted);
 	std::vector<std::string>	split(std::string s, std::string delimiter);
+	void						initListenIpPorts();
 };
 
 #endif

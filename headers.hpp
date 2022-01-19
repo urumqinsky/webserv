@@ -17,5 +17,6 @@
 # include <string>
 # include <iterator>
 # include <algorithm>
+# include <vector>
 
 #endif

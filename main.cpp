@@ -98,24 +98,27 @@ int		main(int argc, char *argv[])
 	}
 	ServerConfig	sConfig(argv[1]);
 
-	printConfig(sConfig);
-	// int nPorts = sConfig.getListenIpPorts().size();
-	// std::vector<lIpPort> lIpPorts = sConfig.getListenIpPorts();
-	// ServerSocket	servSockets[nPorts];
+	// printConfig(sConfig);
+	int nPorts = sConfig.getListenIpPorts().size();
+	std::vector<lIpPort> listenIpPorts = sConfig.getListenIpPorts();
 
-	// for (int i = 0; i < nPorts; i++)
-	// {
-	// 	try
-	// 	{
-	// 		servSockets[i].setSocketForListen(*((lIpPorts[i].ip).c_str()), lIpPorts[i].port);
-	// 	}
-	// 	catch(const std::runtime_error & e)
-	// 	{
-	// 		std::cerr << e.what() << '\n';
-	// 		return (1);
-	// 	}
-	// }
-	// makeQueue(servSockets, nPorts);
+	// for (size_t i = 0; i < listenIpPorts.size(); i++)
+	// 	std::cout << "ip:port = " << listenIpPorts[i].ip << ":" << listenIpPorts[i].port << '\n';
+	ServerSocket	servSockets[nPorts];
+
+	for (int i = 0; i < nPorts; i++)
+	{
+		try
+		{
+			servSockets[i].setSocketForListen(*((listenIpPorts[i].ip).c_str()), listenIpPorts[i].port);
+		}
+		catch(const std::runtime_error & e)
+		{
+			std::cerr << e.what() << '\n';
+			return (1);
+		}
+	}
+	makeQueue(servSockets, nPorts);
 	return (0);
 }
 
@@ -145,12 +148,6 @@ void	watch_loop(int kq, ServerSocket *sSockets, int nPorts)
 	struct sockaddr_in	addr;
 	socklen_t			addrLen = sizeof(addr);
 
-	int nbuf = 5000000;
-	char buf[nbuf];
-	for (int i = 0; i < nbuf; i++)
-		buf[i] = '*';
-	buf[nbuf - 2] = '$';
-	buf[nbuf - 1] = '\0';
 	while (1)
 	{
 		eventNumber = kevent(kq, NULL, 0, eventList, 1024, NULL);
@@ -191,8 +188,19 @@ void	watch_loop(int kq, ServerSocket *sSockets, int nPorts)
 			{
 				recv_msg(eventList[i].ident); //read from socket
 				//считать с сокета запрос от клиента
-				//обработать запрос и отправить ответ
-				send(eventList[i].ident, (const void*)buf, sizeof(buf), 0);
+				//обработать запрос
+				EV_SET(&evSet, eventList[i].ident, EVFILT_WRITE, EV_ADD, 0, 0, NULL);
+				if (kevent(kq, &evSet, 1, NULL, 0, NULL) == -1)
+				{
+					std::cerr << "kevent() error" << std::endl;
+					return ;
+				}
+			}
+			else if (eventList[i].filter == EVFILT_WRITE)
+			{
+				send(eventList[i].ident, (const void*)"hello from server\n", 18, 0);
+				//бесконечная отправка
+				//нужно разобраться с udata
 			}
 		}
 	}

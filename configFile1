@@ -27,7 +27,7 @@ error_page 405 ../Error_page/405.html;
 
 server   {
 	ip 127.0.0.1;
-	port 2222;
+	port 1111;
 	server_name ltheresi.team;
 
 	location / {

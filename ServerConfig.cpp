@@ -6,6 +6,7 @@ ServerConfig::ServerConfig(const char *str)
 	if (str == nullptr)
 		throw std::exception();
 	parseConfigFile(str);
+	initListenIpPorts();
 }
 
 ServerConfig::~ServerConfig()
@@ -197,4 +198,32 @@ std::vector<std::string>	ServerConfig::split(std::string s, std::string delimite
 	}
 	res.push_back(s.substr(pos_start));
 	return res;
+}
+
+void						ServerConfig::initListenIpPorts()
+{
+	lIpPort		tmp;
+
+	for (size_t i = 0; i < httpCont.serverList.size(); i++)
+	{
+		tmp.ip = httpCont.serverList[i].ip;
+		tmp.port = httpCont.serverList[i].port;
+		listenIpPorts.push_back(tmp);
+	}
+	std::vector<lIpPort>::iterator end = listenIpPorts.end();
+	for (std::vector<lIpPort>::iterator it = listenIpPorts.begin(); it != end; ++it) {
+		end = std::remove(it + 1, end, *it);
+	}
+	listenIpPorts.erase(end, listenIpPorts.end());
+}
+
+lIpPort::lIpPort()
+{
+	ip = "";
+	port = 0;
+}
+
+bool lIpPort::operator==(const lIpPort &other)
+{
+	return (this->ip == other.ip && this->port == other.port);
 }

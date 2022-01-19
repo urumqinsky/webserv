@@ -3,6 +3,8 @@
 
 #include "headers.hpp"
 
+#include <cstring>
+
 class Request {
 public:
 	Request();

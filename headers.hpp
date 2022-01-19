@@ -13,5 +13,10 @@
 # include <cstring>
 # include <iostream>
 # include <stdexcept>
+# include <fstream>
+# include <string>
+# include <iterator>
+# include <algorithm>
+# include <vector>
 
 #endif

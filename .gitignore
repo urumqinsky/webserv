@@ -4,6 +4,8 @@ cmake-build-debug
 
 # Prerequisites
 *.d
+cmake*
+.idea
 
 # Compiled Object files
 *.slo
@@ -34,3 +36,5 @@ cmake-build-debug
 *.exe
 *.out
 *.app
+
+.vscode/**/*

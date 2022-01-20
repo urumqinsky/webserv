@@ -1,6 +1,7 @@
 NAME = webserv
 
-SRCS = main.cpp ServerSocket.cpp ServerConfig.cpp
+SRCS = main.cpp ServerSocket.cpp ServerConfig.cpp \
+	testConfigParser.cpp makeQueue.cpp
 
 OBJS = $(SRCS:.cpp=.o)
 

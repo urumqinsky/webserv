@@ -18,5 +18,6 @@
 # include <iterator>
 # include <algorithm>
 # include <vector>
+# include <map>
 
 #endif

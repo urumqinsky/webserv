@@ -1,7 +1,7 @@
+#include "libraryHeaders.hpp"
+
 #ifndef SERVERCONFIG_HPP
 # define SERVERCONFIG_HPP
-
-# include "headers.hpp"
 
 struct	genCont
 {

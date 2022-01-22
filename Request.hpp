@@ -30,13 +30,16 @@ public:
 	Status getStatus();
 
 	void parseFd(std::string req);
-	friend void parseStartLine(Request &other);
-	friend void parseHeader(Request &other);
+	friend void parseFirstLine(Request &other);
+
 
 protected:
+	std::string buf;
+	Status	status;	
+	chunkStatus	chunkStatus;
 	std::string method;
 	std::string path;
-	std::string http;
+	std::string body;
 
 
 private:
@@ -44,13 +47,9 @@ private:
 	Request	&operator=(const Request &other);
 
 	std::string IPport; //?
-	std::string body;
-	std::string buf;
 	int errorStatus;
 
 
-	Status	status;	
-	chunkStatus	chunkStatus;
 
 	std::map <std::string, std::string> headers;
 	std::string responce;  

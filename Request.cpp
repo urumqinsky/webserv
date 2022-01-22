@@ -57,9 +57,15 @@ void parseHeader(Request &other) {
 		other.headers.insert(std::pair<std::string, std::string>(first, second));
 		other.buf.erase(0, first.length() + second.length() + 2 + 2); // space
 	}
-	if (other.status == BODY)
+	if (other.status == BODY){
 		other.buf.erase(0, 2);
 		// + delete all spaces
+		// std::map<std::string, std::string>::iterator it = other.headers.begin();
+		// while (it != other.headers.end()) {
+
+		}
+	}
+
 }
 
 

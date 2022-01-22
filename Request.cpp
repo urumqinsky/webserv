@@ -1,5 +1,7 @@
 #include "Request.hpp"
 
+//IPport
+
 Request::Request() {
 	//показать, какой сервер??
 	this->status = START_LINE;

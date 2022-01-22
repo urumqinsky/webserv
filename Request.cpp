@@ -1,5 +1,7 @@
 #include "Request.hpp"
 
+//IPport
+
 Request::Request() {
 	//показать, какой сервер??
 	this->status = START_LINE;
@@ -50,16 +52,22 @@ void parseHeader(Request &other) {
 	std::string first;
 	std::string second;
 	if (other.buf.find("\r\n\r\n") != std::string::npos) 
-		other.status = BODY;
+		other.status = COMPLETED;
 	while (other.buf.find("\r\n") != std::string::npos && other.buf.length() > 2) {
 		first = other.buf.substr(0, other.buf.find(": ")); // space
 		second = other.buf.substr(other.buf.find(": ") + 2, other.buf.find("\r\n") - first.length() - 2); //space X 2
 		other.headers.insert(std::pair<std::string, std::string>(first, second));
 		other.buf.erase(0, first.length() + second.length() + 2 + 2); // space
 	}
-	if (other.status == BODY)
+	if (other.status == BODY){
 		other.buf.erase(0, 2);
 		// + delete all spaces
+		// std::map<std::string, std::string>::iterator it = other.headers.begin();
+		// while (it != other.headers.end()) {
+
+		// }
+	}
+
 }
 
 
@@ -67,6 +75,7 @@ void Request::parseFd(std::string req) {
 
 	this->buf += req;
 	if (this->buf.find("\r\n") != std::string::npos) {
+		// std::cout << req << std::endl; ///// <---------
 		switch (this->status) {
 			case START_LINE:
 				parseStartLine(*this);

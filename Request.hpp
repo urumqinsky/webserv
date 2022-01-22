@@ -1,7 +1,7 @@
 #ifndef REQUEST_HPP
 # define REQUEST_HPP
 
-#include "headers.hpp"
+#include "libraryHeaders.hpp"
 
 #include <cstring>
 
@@ -30,16 +30,13 @@ public:
 	Status getStatus();
 
 	void parseFd(std::string req);
-	friend void parseFirstLine(Request &other);
-
-
+	friend void parseStartLine(Request &other);
+	friend void parseHeader(Request &other);
+	friend void	writeToClientSocket(int i, struct kevent *eventList);
 protected:
-	std::string buf;
-	Status	status;	
-	chunkStatus	chunkStatus;
 	std::string method;
 	std::string path;
-	std::string body;
+	std::string http;
 
 
 private:
@@ -47,9 +44,13 @@ private:
 	Request	&operator=(const Request &other);
 
 	std::string IPport; //?
+	std::string body;
+	std::string buf;
 	int errorStatus;
 
 
+	Status	status;	
+	chunkStatus	chunkStatus;
 
 	std::map <std::string, std::string> headers;
 	std::string responce;  

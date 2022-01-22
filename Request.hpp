@@ -32,7 +32,7 @@ public:
 	void parseFd(std::string req);
 	friend void parseStartLine(Request &other);
 	friend void parseHeader(Request &other);
-
+	friend void	writeToClientSocket(int i, struct kevent *eventList);
 protected:
 	std::string method;
 	std::string path;

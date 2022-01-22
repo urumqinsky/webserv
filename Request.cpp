@@ -50,7 +50,7 @@ void parseHeader(Request &other) {
 	std::string first;
 	std::string second;
 	if (other.buf.find("\r\n\r\n") != std::string::npos) 
-		other.status = BODY;
+		other.status = COMPLETED;
 	while (other.buf.find("\r\n") != std::string::npos && other.buf.length() > 2) {
 		first = other.buf.substr(0, other.buf.find(": ")); // space
 		second = other.buf.substr(other.buf.find(": ") + 2, other.buf.find("\r\n") - first.length() - 2); //space X 2
@@ -73,6 +73,7 @@ void Request::parseFd(std::string req) {
 
 	this->buf += req;
 	if (this->buf.find("\r\n") != std::string::npos) {
+		// std::cout << req << std::endl; ///// <---------
 		switch (this->status) {
 			case START_LINE:
 				parseStartLine(*this);

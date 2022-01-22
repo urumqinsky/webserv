@@ -1,6 +1,7 @@
 #include "ServerSocket.hpp"
 #include "ServerConfig.hpp"
 #include "functions.hpp"
+#include "Request.hpp"
 
 int		main(int argc, char *argv[])
 {
@@ -11,7 +12,7 @@ int		main(int argc, char *argv[])
 	}
 	ServerConfig	sConfig(argv[1]);
 
-	printConfig(sConfig);
+	// printConfig(sConfig);
 	int nPorts = sConfig.getListenIpPorts().size();
 	std::vector<lIpPort> listenIpPorts = sConfig.getListenIpPorts();
 

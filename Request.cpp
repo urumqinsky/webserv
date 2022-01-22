@@ -63,7 +63,7 @@ void parseHeader(Request &other) {
 		// std::map<std::string, std::string>::iterator it = other.headers.begin();
 		// while (it != other.headers.end()) {
 
-		}
+		// }
 	}
 
 }

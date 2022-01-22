@@ -1,12 +1,13 @@
 NAME = webserv
 
-SRCS = main.cpp ServerSocket.cpp
+SRCS = main.cpp ServerSocket.cpp ServerConfig.cpp \
+	testConfigParser.cpp makeQueue.cpp
 
 OBJS = $(SRCS:.cpp=.o)
 
 DEPS = $(SRCS:.cpp=.d)
 
-FLAGS = -Wall -Werror -Wextra -std=c++98
+FLAGS = -g -Wall -Werror -Wextra -std=c++98
 
 CC = clang++
 

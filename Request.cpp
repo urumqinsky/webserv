@@ -2,14 +2,11 @@
 
 Request::Request() {
 	//показать, какой сервер??
-	this->status = FIRST_LINE;
+	this->status = START_LINE;
 	this->chunkStatus = NUM;
 }
 
 Request::~Request() {}
-
-
-
 
 std::string const &Request::getIPport() {
 	return this->IPport;
@@ -19,17 +16,76 @@ void Request::setIPport(int IPport) {
 	this->IPport = IPport;
 }
 
+Status Request::getStatus() {
+	return this->status;
+}
+
+void parseStartLine(Request &other){
+	std::string tmp = other.buf.substr(0, other.buf.find("\r\n"));
+	char *tmp2 = new char[tmp.length()+1];
+	std::strcpy (tmp2, tmp.c_str());
+	other.method = std::strtok(tmp2, " ");
+	other.path = std::strtok(NULL, " ");
+	other.http = std::strtok(NULL, " ");
+	delete[] tmp2;
+	if (!(other.method == "GET" || other.method == "POST" || other.method == "DELETE")){
+		other.status = ERROR;
+		std::cout << "501 - Not Implemented" << std::endl; 
+	}
+	else if (other.http.empty()) {
+		other.status = ERROR;
+		std::cout << "error2" << std::endl;
+	}
+	else if (other.http != "HTTP/1.1") {
+		other.status = ERROR;
+		std::cout << "505 - HTTP Version Not Supported" << std::endl;
+	}
+	else {
+		other.buf.erase(0, tmp.length() + 2);
+		other.status = HEADERS;
+	}
+}
+
+void parseHeader(Request &other) {
+	std::string first;
+	std::string second;
+	if (other.buf.find("\r\n\r\n") != std::string::npos) 
+		other.status = BODY;
+	while (other.buf.find("\r\n") != std::string::npos && other.buf.length() > 2) {
+		first = other.buf.substr(0, other.buf.find(": ")); // space
+		second = other.buf.substr(other.buf.find(": ") + 2, other.buf.find("\r\n") - first.length() - 2); //space X 2
+		other.headers.insert(std::pair<std::string, std::string>(first, second));
+		other.buf.erase(0, first.length() + second.length() + 2 + 2); // space
+	}
+	if (other.status == BODY)
+		other.buf.erase(0, 2);
+		// + delete all spaces
+}
+
+
 void Request::parseFd(std::string req) {
 
 	this->buf += req;
+	if (this->buf.find("\r\n") != std::string::npos) {
+		switch (this->status) {
+			case START_LINE:
+				parseStartLine(*this);
+			case HEADERS:
+				parseHeader(*this);
+			default:
+				break;
 
-	std::string tmp = this->buf.substr(0, this->buf.find('\n'));
-	char *tmp2 = new char[tmp.length()+1];
-	std::strcpy (tmp2, tmp.c_str());
-	this->headers.insert(std::pair<std::string, std::string>("method", std::strtok(tmp2, " "))); // method
-	this->headers.insert(std::pair<std::string, std::string>("path", std::strtok(NULL, " "))); // path
-	this->headers.insert(std::pair<std::string, std::string>("http", std::strtok(NULL, " "))); // http
-	delete[] tmp2;
+		}
+	}
+
+//PRINT:
+	std::cout << this->method << "\t" << this->path << "\t" << this->http << std::endl;
+	std::map<std::string, std::string>::iterator it2 = this->headers.begin();
+	while (it2 != this->headers.end()){
+		std::cout << it2->first << " - " << it2->second << std::endl;
+		++it2;
+	}
+
 
 	// size_t space = this->buf.find(' ');
 	// this->headers.insert(std::pair<std::string, std::string>("method", this->buf.substr(0, space))); // method
@@ -48,11 +104,6 @@ void Request::parseFd(std::string req) {
 
 
 
-	std::map<std::string, std::string>::iterator it2 = this->headers.begin();
-	while (it2 != this->headers.end()){
-		std::cout << it2->first << " - " << it2->second << std::endl;
-		++it2;
-	}
 
 	// std::cout << "\n" << this->buf << std::endl << std::endl;
 

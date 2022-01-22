@@ -6,10 +6,10 @@
 #include <cstring>
 
 enum Status {
-	FIRST_LINE,
+	START_LINE,
 	HEADERS,
 	BODY,
-	chunkED_BODY,
+	CHUNKED_BODY,
 	COMPLETED,
 	ERROR
 };
@@ -27,15 +27,23 @@ public:
 
 	std::string const &getIPport();
 	void setIPport(int IPport);
+	Status getStatus();
+
 	void parseFd(std::string req);
+	friend void parseStartLine(Request &other);
+	friend void parseHeader(Request &other);
+
+protected:
+	std::string method;
+	std::string path;
+	std::string http;
+
 
 private:
 	Request(const Request &other);
 	Request	&operator=(const Request &other);
 
 	std::string IPport; //?
-	std::string method;
-	std::string path;
 	std::string body;
 	std::string buf;
 	int errorStatus;

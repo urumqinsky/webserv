@@ -27,6 +27,11 @@ const ServerConfig	&ServerConfig::operator=(const ServerConfig &other)
 	return (*this);
 }
 
+void	ServerConfig::inheritenceHandler()
+{
+
+}
+
 void	ServerConfig::parseConfigFile(const char *filename)
 {
 	std::ifstream				in(filename);
@@ -53,6 +58,17 @@ void	ServerConfig::parseConfigFile(const char *filename)
 			}
 		}
 	}
+	inheritenceHandler();
+}
+
+void	parseErrorPage(std::vector<std::string> splitted, std::map<int, std::string> &err_map)
+{
+	// std::string	path = splitted.back();
+
+	// for (size_t i = 0; i < splitted.size() - 1; i++)
+	// 	err_map[std::atoi(splitted[i].c_str())] = path;
+	// for (std::map<int, std::string>::iterator it = err_map.begin(); it != err_map.end(); ++it)
+	// 	std::cout << it->first << " " << it->second << '\n';
 }
 
 bool	ServerConfig::parseGeneral(std::vector<std::string> splitted, genCont &gen)
@@ -70,7 +86,7 @@ bool	ServerConfig::parseGeneral(std::vector<std::string> splitted, genCont &gen)
 	}
 	else if (!(splitted[0].compare("autoindex")))
 	{
-		gen.autoindex = (!(splitted[1].compare("on"))) ? true : false;
+		gen.autoindex = (!(splitted[1].compare("on"))) ? 1 : 2;
 		return (true);
 	}
 	else if (!(splitted[0].compare("root")))
@@ -78,12 +94,13 @@ bool	ServerConfig::parseGeneral(std::vector<std::string> splitted, genCont &gen)
 		gen.root = splitted[1];
 		return (true);
 	}
-	else if (!(splitted[0].compare("error_page")))
-	{
-		for (size_t i = 1; i < splitted.size(); i++)
-			gen.error_page.push_back(splitted[i]);
-		return (true);
-	}
+	// else if (!(splitted[0].compare("error_page")))
+	// 	parseErrorPage(splitted, gen.error_page);
+	// {
+	// 	for (size_t i = 1; i < splitted.size(); i++)
+	// 		gen.error_page.push_back(splitted[i]);
+	// 	return (true);
+	// }
 	return (false);
 }
 
@@ -226,4 +243,9 @@ lIpPort::lIpPort()
 bool lIpPort::operator==(const lIpPort &other)
 {
 	return (this->ip == other.ip && this->port == other.port);
+}
+
+void						ServerConfig::inheritenceHandler()
+{
+
 }

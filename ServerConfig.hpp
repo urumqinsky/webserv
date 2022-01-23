@@ -9,9 +9,8 @@ struct	genCont
 	std::vector<std::string>	index;
 	size_t						bodySizeMax;
 	std::string					root;
-	bool						autoindex; // on - true, off - faulse
-	std::vector<std::string>	error_page;
-	genCont(){}
+	int							autoindex; // 1 - off , 2 - on , 0 - without autoindex
+	std::map<int, std::string>		error_page;
 };
 
 struct	locCont
@@ -23,7 +22,6 @@ struct	locCont
 	std::vector<struct locCont>	locListL;
 	std::string					alias;
 	genCont						genL;
-	locCont(){}
 };
 
 struct	serCont
@@ -33,14 +31,12 @@ struct	serCont
 	std::string				server_name; //Host
 	std::vector<locCont>	locListS;
 	genCont					genS;
-	serCont(){}
 };
 
 struct	htCont
 {
 	std::vector<serCont>	serverList; // [ipport + servername]
 	genCont					genH;
-	htCont(){}
 };
 
 struct	lIpPort
@@ -73,9 +69,13 @@ private:
 	ServerConfig();
 	bool						parseGeneral(std::vector<std::string> splitted, genCont &gen);
 	serCont						parseServer(std::ifstream &in, std::string &line);
-	locCont						parseLocation(std::ifstream &in, std::string &line, std::vector<std::string> splitted);
+	locCont						parseLocation(std::ifstream &in, std::string &line,
+												std::vector<std::string> splitted);
+	void						parseErrorPage(std::vector<std::string> splitted, std::map<int,
+												std::string> &err_map);
 	std::vector<std::string>	split(std::string s, std::string delimiter);
 	void						initListenIpPorts();
+	void						inheritenceHandler();
 };
 
 #endif

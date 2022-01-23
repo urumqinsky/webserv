@@ -124,7 +124,6 @@ void	watch_loop(int kq, ServerSocket *sSockets, int nPorts, htCont conf)
 				readFromClientSocket(kq, i, eventList, new htCont(conf));
 			else if (eventList[i].filter == EVFILT_WRITE)
 				writeToClientSocket(i, eventList);
-
 		}
 	}
 }

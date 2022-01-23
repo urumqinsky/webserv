@@ -12,28 +12,29 @@ int		main(int argc, char *argv[])
 	}
 	ServerConfig	sConfig(argv[1]);
 
+	
 	// printConfig(sConfig);
-	int nPorts = sConfig.getListenIpPorts().size();
-	std::vector<lIpPort> listenIpPorts = sConfig.getListenIpPorts();
+	// int nPorts = sConfig.getListenIpPorts().size();
+	// std::vector<lIpPort> listenIpPorts = sConfig.getListenIpPorts();
 
-	// for (size_t i = 0; i < listenIpPorts.size(); i++)
-	// 	std::cout << "ip:port = " << listenIpPorts[i].ip << ":" << listenIpPorts[i].port << '\n';
-	ServerSocket	servSockets[nPorts];
+	// // for (size_t i = 0; i < listenIpPorts.size(); i++)
+	// // 	std::cout << "ip:port = " << listenIpPorts[i].ip << ":" << listenIpPorts[i].port << '\n';
+	// ServerSocket	servSockets[nPorts];
 
-	for (int i = 0; i < nPorts; i++)
-	{
-		try
-		{
-			servSockets[i].setSocketForListen(*((listenIpPorts[i].ip).c_str()),
-													listenIpPorts[i].port);
-		}
-		catch(const std::runtime_error & e)
-		{
-			std::cerr << e.what() << '\n';
-			return (1);
-		}
-	}
-	makeQueue(servSockets, nPorts, sConfig);
-	return (0);
+	// for (int i = 0; i < nPorts; i++)
+	// {
+	// 	try
+	// 	{
+	// 		servSockets[i].setSocketForListen(*((listenIpPorts[i].ip).c_str()),
+	// 												listenIpPorts[i].port);
+	// 	}
+	// 	catch(const std::runtime_error & e)
+	// 	{
+	// 		std::cerr << e.what() << '\n';
+	// 		return (1);
+	// 	}
+	// }
+	// makeQueue(servSockets, nPorts, sConfig);
+	// return (0);
 }
 

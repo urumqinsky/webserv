@@ -2,6 +2,8 @@
 # define REQUEST_HPP
 
 #include "libraryHeaders.hpp"
+#include "ServerConfig.hpp"
+#include "functions.hpp"
 
 #include <cstring>
 
@@ -24,27 +26,36 @@ public:
 	Request(std::string Server);//to discuss
 	Request();
 	~Request();
-
-	std::string const &getIPport();
-	void setIPport(int IPport);
+	
+	
+	Request(htCont *conf);
+	std::string const &getipPort();
+	void setipPort(int ipPort);
 	Status getStatus();
+	std::string getResponce();
 
 	void parseFd(std::string req);
 	friend void parseStartLine(Request &other);
 	friend void parseHeader(Request &other);
 	friend void parseBody(Request &other);
 	friend void	writeToClientSocket(int i, struct kevent *eventList);
+
+	void createResponce();
+	friend void checkRequest(Request &other);
 protected:
 	std::string method;
 	std::string path;
 	std::string http;
+	std::map <std::string, std::string> headers;
 
 
 private:
 	Request(const Request &other);
 	Request	&operator=(const Request &other);
 
-	std::string IPport; //?
+	htCont *conf;
+
+	std::string ipPort; //?
 	std::string body;
 	std::string buf;
 	int errorStatus;
@@ -53,8 +64,8 @@ private:
 	Status	status;	
 	chunkStatus	chunkStatus;
 
-	std::map <std::string, std::string> headers;
-	std::string responce;  
+	std::string responce;
+	int respCode;
 
 };
 

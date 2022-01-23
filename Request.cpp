@@ -1,6 +1,6 @@
 #include "Request.hpp"
 
-//IPport
+//ipPort
 
 Request::Request() {
 	//показать, какой сервер??
@@ -8,19 +8,31 @@ Request::Request() {
 	this->chunkStatus = NUM;
 }
 
-Request::~Request() {}
-
-std::string const &Request::getIPport() {
-	return this->IPport;
+Request::Request(htCont *conf) {
+	//показать, какой сервер??
+	this->status = START_LINE;
+	this->chunkStatus = NUM;
+	this->conf = conf;
 }
 
-void Request::setIPport(int IPport) {
-	this->IPport = IPport;
+Request::~Request() {}
+
+std::string const &Request::getipPort() {
+	return this->ipPort;
+}
+
+void Request::setipPort(int ipPort) {
+	this->ipPort = ipPort;
 }
 
 Status Request::getStatus() {
 	return this->status;
 }
+
+std::string Request::getResponce() {
+	return this->responce;
+}
+
 
 void parseStartLine(Request &other){
 	std::string tmp = other.buf.substr(0, other.buf.find("\r\n"));
@@ -65,9 +77,8 @@ void parseHeader(Request &other) {
 		while (it != other.headers.end()) {
 			size_t i = 0;
 			size_t j = it->second.length() - 1;
-			for ( ; it->second.at(i) == ' '; ++i);
-			for ( ; it->second.at(j) == ' '; --j)
-				char tmp = it->second.at(j);
+			for ( ; it->second.at(i) == ' '; i++);
+			for ( ; it->second.at(j) == ' '; j--);
 			it->second.assign(it->second, i, j - i + 1);
 			++it;
 		}
@@ -100,7 +111,6 @@ void Request::parseFd(std::string req) {
 
 		}
 	}
-
 //PRINT:
 	std::cout << this->method << "\t" << this->path << "\t" << this->http << std::endl;
 	std::map<std::string, std::string>::iterator it2 = this->headers.begin();
@@ -110,5 +120,31 @@ void Request::parseFd(std::string req) {
 	}
 	if (this->body != "")
 		std::cout << this->body << std::endl;
+	createResponce();
 	// sleep (10);
+}
+
+void checkRequest(Request &other) {
+	(void)other;
+	// while()
+	// if (other.headers.find("Host") != other.conf.)
+}
+
+void Request::createResponce() {
+
+	std::ifstream fs("/Users/heula/webserv/level1.html");
+	std::string line;
+	// std::string resp = "HTTP/1.1 200 OK\r\nServer: webserv\r\nContent-Type: text/html\r\n\r\n";
+	std::string resp = "HTTP/1.1 200 OK\r\n";
+	std::map<std::string, std::string>::iterator it = this->headers.begin();
+	while (it != this->headers.end()){
+		resp += (it->first + ": " + it->second + "\r\n");
+		++it;
+	}
+	resp += "\r\n";
+	while (getline(fs, line))
+		resp += line + "\r\n";
+
+// PRINT RESPONCE
+	// std::cout << "\r\n" << resp << std::endl;
 }

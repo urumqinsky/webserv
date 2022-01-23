@@ -78,7 +78,8 @@ void	writeToClientSocket(int i, struct kevent *eventList)
 		while (getline(fs, line))
 			buf += line + "\n";
 		
-		send(eventList[i].ident, buf.c_str(), buf.length(), 0);
+		send(eventList[i].ident, buf.c_str(), buf.length(), 0); // buf -> req->getResponce
+		// send(eventList[i].ident, req->getResponce().c_str(), req->getResponce().length(), 0); // buf -> req->getResponce
 		req->status = START_LINE;
 	}
 	//бесконечная отправка

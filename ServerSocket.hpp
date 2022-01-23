@@ -1,4 +1,5 @@
 #include "libraryHeaders.hpp"
+#include "ServerConfig.hpp"
 
 #ifndef SERVERSOCKET_HPP
 # define SERVERSOCKET_HPP
@@ -13,9 +14,11 @@ public:
 	ServerSocket	&operator=(const ServerSocket &other);
 	int				getSocketFd() const;
 	void			setSocketForListen(const char &ip, int port);
+	lIpPort			getIpPort() const;
 private:
 	int					listenSocketFd;
 	struct sockaddr_in	listenSocketAddr;
+	lIpPort				ipPort;
 };
 
 #endif

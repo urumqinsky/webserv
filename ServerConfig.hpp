@@ -1,4 +1,5 @@
 #include "libraryHeaders.hpp"
+#include "Request.hpp"
 
 #ifndef SERVERCONFIG_HPP
 # define SERVERCONFIG_HPP
@@ -30,7 +31,7 @@ struct	serCont
 	std::string				ip; //IPport
 	int						port;
 	std::string				server_name; //Host
-	std::vector<locCont>	locListS; 
+	std::vector<locCont>	locListS;
 	genCont					genS;
 	serCont(){}
 };
@@ -48,6 +49,12 @@ struct	lIpPort
 	int			port;
 	lIpPort();
 	bool operator==(const lIpPort &other);
+};
+
+struct	s_udata
+{
+	lIpPort	*ipPort;
+	Request	*req;
 };
 
 class ServerConfig

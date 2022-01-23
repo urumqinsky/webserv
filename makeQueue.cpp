@@ -40,47 +40,46 @@ void	disconnectSocket(int kq, int i, struct kevent *eventList)
 	// если оно есть (1-ое READ, 2-ое WRITE)
 }
 
-void	readFromClientSocket(int kq, int i, struct kevent *eventList)
+void	readFromClientSocket(int kq, int i, struct kevent *eventList, htCont *conf)
 {
-	struct kevent evSet;
-	Request *req;
-
+	// struct kevent evSet;
+	(void)kq;
 	std::string msg = recv_msg(eventList[i].ident, (int)eventList[i].data); //read from socket
 	//считать с сокета запрос от клиента
 	//обработать запрос
-	if (eventList[i].udata == NULL)
+	s_udata *tmp = static_cast<s_udata*>(eventList[i].udata);
+	if (tmp->req == NULL)
 	{
-		req = new Request;
-		EV_SET(&evSet, eventList[i].ident, EVFILT_READ, EV_ADD, 0, 0, (void*)req);
-		if (kevent(kq, &evSet, 1, NULL, 0, NULL) == -1)
-			return (printError("kevent() error"));
+		tmp->req = new Request(conf);
+		// EV_SET(&evSet, eventList[i].ident, EVFILT_READ, EV_ADD, 0, 0, static_cast<void*>(tmp));
+		// if (kevent(kq, &evSet, 1, NULL, 0, NULL) == -1)
+		// 	return (printError("kevent() error"));
 	}
-	else
-		req = (Request*)(eventList[i].udata);
+	tmp->req->parseFd(msg);
 
-	req->parseFd(msg);
-	if (req->getStatus() == COMPLETED)
-	{
-		EV_SET(&evSet, eventList[i].ident, EVFILT_WRITE, EV_ADD, 0, 0, (void*)req);
-		if (kevent(kq, &evSet, 1, NULL, 0, NULL) == -1)
-			return (printError("kevent() error"));
-	}
+	// if (req->getStatus() == COMPLETED)
+	// {
+	// 	EV_SET(&evSet, eventList[i].ident, EVFILT_WRITE, EV_ADD, 0, 0, (void*)req);
+	// 	if (kevent(kq, &evSet, 1, NULL, 0, NULL) == -1)
+	// 		return (printError("kevent() error"));
+	// }
 
 }
 
 void	writeToClientSocket(int i, struct kevent *eventList)
 {
-	Request *req = (Request*)(eventList[i].udata);
-	if (req->getStatus() == COMPLETED) {
+	s_udata *tmp = static_cast<s_udata*>(eventList[i].udata);
+	// Request *req = (Request*)(eventList[i].udata);
+	if (tmp->req->getStatus() == COMPLETED) {
 		std::ifstream fs("/Users/heula/webserv/level1.html");
 		std::string line;
 		std::string buf = "HTTP/1.1 200 OK\r\nServer: webserv\r\nContent-Type: text/html\r\n\r\n";
 		while (getline(fs, line))
 			buf += line + "\n";
-		
+
 		send(eventList[i].ident, buf.c_str(), buf.length(), 0); // buf -> req->getResponce
 		// send(eventList[i].ident, req->getResponce().c_str(), req->getResponce().length(), 0); // buf -> req->getResponce
-		req->status = START_LINE;
+		tmp->req->status = START_LINE;
 	}
 	//бесконечная отправка
 	//нужно разобраться с udata в struct kevent
@@ -97,12 +96,15 @@ void	acceptNewClient(int kq, int i, struct kevent *eventList)
 	newEventFd = accept(eventList[i].ident, (struct sockaddr*) &addr, &addrLen);
 	if (newEventFd == -1)
 		return (printError("accept() error"));
-	EV_SET(&evSet, newEventFd, EVFILT_READ, EV_ADD, 0, 0, NULL);
+	s_udata *tmp = new s_udata;
+	tmp->req = NULL;
+	tmp->ipPort = static_cast<lIpPort*>(eventList[i].udata);
+	EV_SET(&evSet, newEventFd, EVFILT_READ, EV_ADD, 0, 0, tmp);
 	if (kevent(kq, &evSet, 1, NULL, 0, NULL) == -1)
 		return (printError("kevent() error"));
 }
 
-void	watch_loop(int kq, ServerSocket *sSockets, int nPorts)
+void	watch_loop(int kq, ServerSocket *sSockets, int nPorts, htCont conf)
 {
 	struct kevent		eventList[1024];
 	int					eventNumber;
@@ -119,7 +121,7 @@ void	watch_loop(int kq, ServerSocket *sSockets, int nPorts)
 			else if (compareWithListenSockets(eventList[i].ident, sSockets, nPorts))
 				acceptNewClient(kq, i, eventList);
 			else if (eventList[i].filter == EVFILT_READ)
-				readFromClientSocket(kq, i, eventList);
+				readFromClientSocket(kq, i, eventList, new htCont(conf));
 			else if (eventList[i].filter == EVFILT_WRITE)
 				writeToClientSocket(i, eventList);
 
@@ -138,10 +140,11 @@ void	makeQueue(ServerSocket *servSockets, int nPorts, ServerConfig &sConfig)
 		return (printError("kqueue() error"));
 	for (int i = 0; i < nPorts; i++)
 	{
+		lIpPort *tmp = new lIpPort(servSockets[i].getIpPort());
 		EV_SET(&changeList[i], servSockets[i].getSocketFd(),
-				EVFILT_READ, EV_ADD, 0, 0, NULL);
+				EVFILT_READ, EV_ADD, 0, 0, static_cast<void*>(tmp));
 	}
 	if (kevent(kq, changeList, nPorts, NULL, 0, NULL) == -1)
 		return (printError("kevent() error"));
-	watch_loop(kq, servSockets, nPorts);
+	watch_loop(kq, servSockets, nPorts, sConfig.getHttpCont());
 }

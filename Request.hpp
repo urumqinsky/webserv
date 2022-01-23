@@ -1,6 +1,8 @@
 #ifndef REQUEST_HPP
 # define REQUEST_HPP
 
+class Request;
+
 #include "libraryHeaders.hpp"
 #include "ServerConfig.hpp"
 #include "functions.hpp"
@@ -26,8 +28,8 @@ public:
 	Request(std::string Server);//to discuss
 	Request();
 	~Request();
-	
-	
+
+
 	Request(htCont *conf);
 	std::string const &getipPort();
 	void setipPort(int ipPort);
@@ -61,7 +63,7 @@ private:
 	int errorStatus;
 
 
-	Status	status;	
+	Status	status;
 	chunkStatus	chunkStatus;
 
 	std::string responce;

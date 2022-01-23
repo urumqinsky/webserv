@@ -14,7 +14,7 @@ int main(){
     // fs.close();
     // std::cout << requestText;
     // requestText = "GET  / HTTP/1.1\r\nHost:  http.maxkuznetsov.ru   \r\nContent-Type:   application/x-www-form-urlencoded    \r\n\r\nthis is body\r\n\r\n";
-    requestText = "GET  / HTTP/1.1\r\nHost:http.maxkuznetsov.ru\r\nContent-Type:application/x-www-form-urlencoded\r\n\r\n";
+    requestText = "GET  / HTTP/1.1\r\nHost: abs\r\nContent-Type:application/x-www-form-urlencoded\r\n\r\n";
     // requestText = "GET  / HTTP/1.1\nHost: http.maxkuznetsov.ru";
     test.parseFd(requestText);
 }

@@ -51,23 +51,35 @@ void parseStartLine(Request &other){
 void parseHeader(Request &other) {
 	std::string first;
 	std::string second;
-	if (other.buf.find("\r\n\r\n") != std::string::npos) 
-		other.status = COMPLETED;
-	while (other.buf.find("\r\n") != std::string::npos && other.buf.length() > 2) {
-		first = other.buf.substr(0, other.buf.find(": ")); // space
-		second = other.buf.substr(other.buf.find(": ") + 2, other.buf.find("\r\n") - first.length() - 2); //space X 2
+	if (other.buf.find("\r\n\r\n") != std::string::npos)
+		other.status = BODY;
+	while (other.buf.find("\r\n") != std::string::npos && other.buf.find("\r\n") != other.buf.find("\r\n\r\n")) {
+		first = other.buf.substr(0, other.buf.find(":")); // uppercase
+		second = other.buf.substr(other.buf.find(":") + 1, other.buf.find("\r\n") - first.length());
 		other.headers.insert(std::pair<std::string, std::string>(first, second));
-		other.buf.erase(0, first.length() + second.length() + 2 + 2); // space
+		other.buf.erase(0, first.length() + second.length() + 2);
 	}
 	if (other.status == BODY){
 		other.buf.erase(0, 2);
-		// + delete all spaces
-		// std::map<std::string, std::string>::iterator it = other.headers.begin();
-		// while (it != other.headers.end()) {
-
-		// }
+		std::map<std::string, std::string>::iterator it = other.headers.begin();
+		while (it != other.headers.end()) {
+			size_t i = 0;
+			size_t j = it->second.length() - 1;
+			for ( ; it->second.at(i) == ' '; ++i);
+			for ( ; it->second.at(j) == ' '; j--)
+				char tmp = it->second.at(j);
+			it->second.assign(it->second, i, j - i);
+			++it;
+		}
 	}
+}
 
+void parseBody(Request &other) {
+	if (other.buf.find("\r\n\r\n") != std::string::npos) {
+		other.body.assign(other.buf, 0, other.buf.length() - 4);
+		other.buf.erase();
+	}
+	other.status = COMPLETED;
 }
 
 
@@ -81,6 +93,8 @@ void Request::parseFd(std::string req) {
 				parseStartLine(*this);
 			case HEADERS:
 				parseHeader(*this);
+			case BODY:
+				parseBody(*this);
 			default:
 				break;
 
@@ -94,27 +108,6 @@ void Request::parseFd(std::string req) {
 		std::cout << it2->first << " - " << it2->second << std::endl;
 		++it2;
 	}
-
-
-	// size_t space = this->buf.find(' ');
-	// this->headers.insert(std::pair<std::string, std::string>("method", this->buf.substr(0, space))); // method
-	// // space += this->buf.find(' ', space);
-	// this->headers.insert(std::pair<std::string, std::string>("path", this->buf.substr(space, space + this->buf.find(' ', space)))); // path
-	// space += this->buf.find(' ', space);
-	// this->headers.insert(std::pair<std::string, std::string>("http", this->buf.substr(0, space))); // http
-
-	// size_t found = this->buf.find("\r\n");
-	// // for (size_t found = this->buf.find("\n"); found != std::string::npos; found += this->buf.find("\n")) {
-	// 	while (found != std::string::npos){
-	// 	this->headers.insert(std::pair<std::string, std::string>(this->buf.substr(found + 1, this->buf.find(": ")), this->buf.substr(this->buf.find(": ") + 1, this->buf.find("\r\n")))); // 
-	// 	// this->headers.insert(std::pair<std::string, std::string>(this->buf.sчubstr(0, this->buf.find(": ")), this->buf.substr(this->buf.find(": ") + 1, this->buf.find("\n")))); // 
-	// 	found += this->buf.find("\r\n", found);
-	// }
-
-
-
-
-	// std::cout << "\n" << this->buf << std::endl << std::endl;
-
+	std::cout << this->body << std::endl;
 	// sleep (10);
 }

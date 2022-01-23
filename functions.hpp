@@ -6,6 +6,7 @@
 
 void	printConfig(ServerConfig &sc);
 void	makeQueue(ServerSocket *servSockets, int nPorst, ServerConfig &sConfig);
+void	printError(const std::string &comment);
 
 
 #endif

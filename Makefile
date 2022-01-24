@@ -1,6 +1,8 @@
 NAME = webserv
 
-SRCS = main.cpp ServerSocket.cpp ServerConfig.cpp
+SRCS = main.cpp ServerSocket.cpp ServerConfig.cpp \
+	testConfigParser.cpp makeQueue.cpp Request.cpp
+
 
 OBJS = $(SRCS:.cpp=.o)
 
@@ -15,7 +17,7 @@ all: $(NAME)
 $(NAME): $(OBJS)
 	$(CC) $(FLAGS) $^ -o $@
 
-%.o: %.cpp
+%.o: %.cpp Makefile
 	$(CC) $(FLAGS) -MMD -MP -c $< -o $@
 
 -include $(DEPS)

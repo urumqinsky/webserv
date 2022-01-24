@@ -36,6 +36,8 @@ int				ServerSocket::getSocketFd() const
 
 void			ServerSocket::setSocketForListen(const char &ip, int port)
 {
+	ipPort.ip = std::string(&ip);
+	ipPort.port = port;
 	listenSocketFd = socket(AF_INET, SOCK_STREAM, 0);
 	if (listenSocketFd == -1)
 		throw std::runtime_error("socket() error");
@@ -57,4 +59,9 @@ void			ServerSocket::setSocketForListen(const char &ip, int port)
 		close(listenSocketFd);
 		throw std::runtime_error("listen() error");
 	}
+}
+
+lIpPort			ServerSocket::getIpPort() const
+{
+	return (ipPort);
 }

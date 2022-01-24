@@ -1,21 +1,22 @@
+#include "libraryHeaders.hpp"
+#include "Request.hpp"
+
 #ifndef SERVERCONFIG_HPP
 # define SERVERCONFIG_HPP
-
-# include "headers.hpp"
 
 struct	genCont
 {
 	std::vector<std::string>	index;
 	size_t						bodySizeMax;
 	std::string					root;
-	bool						autoindex;
+	bool						autoindex; // on - true, off - faulse
 	std::vector<std::string>	error_page;
 	genCont(){}
 };
 
 struct	locCont
 {
-	std::vector<std::string>	locArgs;
+	std::vector<std::string>	locArgs; // path.begin()
 	std::vector<std::string>	methods;
 	std::string					cgiPath;
 	std::string					cgiExtension;
@@ -27,9 +28,9 @@ struct	locCont
 
 struct	serCont
 {
-	std::string				ip;
+	std::string				ip; //IPport
 	int						port;
-	std::string				server_name;
+	std::string				server_name; //Host
 	std::vector<locCont>	locListS;
 	genCont					genS;
 	serCont(){}
@@ -37,7 +38,7 @@ struct	serCont
 
 struct	htCont
 {
-	std::vector<serCont>	serverList;
+	std::vector<serCont>	serverList; // [ipport + servername]
 	genCont					genH;
 	htCont(){}
 };
@@ -48,6 +49,12 @@ struct	lIpPort
 	int			port;
 	lIpPort();
 	bool operator==(const lIpPort &other);
+};
+
+struct	s_udata
+{
+	lIpPort	*ipPort;
+	Request	*req;
 };
 
 class ServerConfig

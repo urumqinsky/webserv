@@ -3,85 +3,10 @@ server   {
 	port 1111;
 	server_name ltheresi.team;
 
-	location \ *.html {
+	location \  {
 		autoindex on;
-		root ../Html;
+		root /Users/heula/webserv;
 		max_body_size 55;
-		location /html {
-			autoindex on;
-			root ../Html;
-			max_body_size 100;
-			index index3.html;
-			location /html/ttt {
-				autoindex on;
-				root ../Html;
-				max_body_size 100;
-				index index3.html;
-			}
-		}
 	}
 }
 
-error_page 404 ../Error_page/404.html;
-error_page 405 ../Error_page/405.html;
-
-server   {
-	ip 127.0.0.1;
-	port 1111;
-	server_name ltheresi.team;
-
-	location / {
-		allow GET;
-		autoindex off;
-		index youpi.bad_extension;
-		alias ../Tester/YoupiBanane;
-		cgi ../Tester/cgi_tester;
-		cgi_extension .bla;
-	}
-	location /test {
-		allow GET POST;
-		autoindex off;
-		index youpi.bad_extension;
-		alias ../Tester/YoupiBanane/hello;
-		cgi ../Tester/cgi_tester;
-		cgi_extension .bla;
-    	}
-	location /directory {
-		allow GET POST;
-		autoindex off;
-		index youpi.bad_extension;
-		alias ../Tester/YoupiBanane;
-		cgi ../Tester/cgi_tester;
-		cgi_extension .bla;
-	}
-	location / /put_test/* {
-		allow PUT;
-		autoindex off;
-		alias ../Tester/YoupiBanane;
-		cgi ../Tester/cgi_tester;
-		cgi_extension .bla;
-	}
-	location /post_body {
-		allow POST;
-		max_body_size 100;
-		autoindex off;
-		index youpi.bad_extension;
-		alias ../Tester/YoupiBanane;
-		cgi ../Tester/cgi_tester;
-        cgi_extension .bla;
-	}
-}
-
-server {
-    ip 127.0.0.1;
-    port 3333;
-    server_name site.site;
-    location / {
-        autoindex on;
-        root ../Tester;
-    }
-    location /site {
-    	autoindex on;
-    	root ../Tester;
-    }
-}

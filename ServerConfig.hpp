@@ -10,7 +10,8 @@ struct	genCont
 	size_t						bodySizeMax;
 	std::string					root;
 	int							autoindex; // 1 - off , 2 - on , 0 - without autoindex
-	std::map<int, std::string>		error_page;
+	std::map<int, std::string>	error_page;
+	genCont();
 };
 
 struct	locCont
@@ -31,6 +32,7 @@ struct	serCont
 	std::string				server_name; //Host
 	std::vector<locCont>	locListS;
 	genCont					genS;
+	serCont();
 };
 
 struct	htCont
@@ -76,6 +78,7 @@ private:
 	std::vector<std::string>	split(std::string s, std::string delimiter);
 	void						initListenIpPorts();
 	void						inheritenceHandler();
+	void						checkGeneralContent(genCont &to, genCont &from);
 };
 
 #endif

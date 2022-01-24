@@ -1,12 +1,17 @@
 server   {
 	ip 127.0.0.1;
 	port 1111;
-	server_name ltheresi.team;
+	root /Users/rlando/;
 
+	server_name ltheresi.team;
 	location \  {
-		autoindex on;
+		autoindex off;
 		root /Users/heula/webserv;
 		max_body_size 55;
+
 	}
 }
-
+autoindex on;
+error_page 500 501 502 /error5.html;
+root /Users/ltulune/webserv;
+max_body_size 100;

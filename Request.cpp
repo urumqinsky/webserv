@@ -130,8 +130,28 @@ void Request::parseFd(std::string req) {
 
 void checkRequest(Request &other) {
 	(void)other;
-	// while()
-	if (other.headers.find("Host") != other.conf.)
+	std::vector<serCont>::iterator it_begin = other.conf->serverList.begin();
+	std::vector<serCont>::iterator it_end = other.conf->serverList.end();
+	other.status = ERROR;
+	while(it_begin != it_end) {
+		if ((*it_begin).ip == other.ip && (*it_begin).port == other.port) {
+			if ((*it_begin).server_name == (other.headers.find("Host"))->second) {
+				for (size_t i = 1; i != (*it_begin).locListS.size(); i++) {
+					int j = 0;
+					for (; (*it_begin).locListS[i].locArgs[j] != other.path; j++);
+					if (j != (*it_begin).locListS[i].locArgs.size())
+						other.status = COMPLETED;
+
+				}
+			}
+			else
+				continue;
+		}
+		else 
+			++it_begin;
+	// if (other.headers.find("Host") != other.conf.)
+
+	}
 }
 
 void Request::createResponce() {

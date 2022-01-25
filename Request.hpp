@@ -50,15 +50,15 @@ protected:
 	std::string http;
 	std::map <std::string, std::string> headers;
 
+	htCont *conf;
+
+	std::string ip;
+	int port;
 
 private:
 	Request(const Request &other);
 	Request	&operator=(const Request &other);
 
-	htCont *conf;
-
-	std::string ip;
-	int port;
 	std::string body;
 	std::string buf;
 	int errorStatus;

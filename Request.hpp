@@ -30,7 +30,7 @@ public:
 	~Request();
 
 
-	Request(htCont *conf);
+	Request(htCont *conf, lIpPort *ip);
 	std::string const &getipPort();
 	void setipPort(int ipPort);
 	Status getStatus();
@@ -57,7 +57,8 @@ private:
 
 	htCont *conf;
 
-	std::string ipPort; //?
+	std::string ip;
+	int port;
 	std::string body;
 	std::string buf;
 	int errorStatus;

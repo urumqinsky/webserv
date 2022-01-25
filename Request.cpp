@@ -2,27 +2,28 @@
 
 //ipPort
 
-Request::Request() {
-	//показать, какой сервер??
-	this->status = START_LINE;
-	this->chunkStatus = NUM;
-}
+// Request::Request() {
+// 	//показать, какой сервер??
+// 	this->status = START_LINE;
+// 	this->chunkStatus = NUM;
+// }
 
-Request::Request(htCont *conf) {
-	//показать, какой сервер??
+Request::Request(htCont *conf, lIpPort *ip) {
 	this->status = START_LINE;
 	this->chunkStatus = NUM;
 	this->conf = conf;
+	this->ip = ip->ip;
+	this->port = ip->port;
 }
 
 Request::~Request() {}
 
 std::string const &Request::getipPort() {
-	return this->ipPort;
+	return this->ip;
 }
 
 void Request::setipPort(int ipPort) {
-	this->ipPort = ipPort;
+	this->ip = ipPort;
 }
 
 Status Request::getStatus() {
@@ -120,6 +121,9 @@ void Request::parseFd(std::string req) {
 	}
 	if (this->body != "")
 		std::cout << this->body << std::endl;
+	// if (CGI)
+	// 	go to Said(*this);
+	// else
 	createResponce();
 	// sleep (10);
 }
@@ -127,23 +131,23 @@ void Request::parseFd(std::string req) {
 void checkRequest(Request &other) {
 	(void)other;
 	// while()
-	// if (other.headers.find("Host") != other.conf.)
+	if (other.headers.find("Host") != other.conf.)
 }
 
 void Request::createResponce() {
 
 	std::ifstream fs("/Users/heula/webserv/level1.html");
 	std::string line;
-	// std::string resp = "HTTP/1.1 200 OK\r\nServer: webserv\r\nContent-Type: text/html\r\n\r\n";
-	std::string resp = "HTTP/1.1 200 OK\r\n";
+	// this->responce = "HTTP/1.1 200 OK\r\nServer: webserv\r\nContent-Type: text/html\r\n\r\n";
+	this->responce = this->http + " 200 OK\r\nServer: webserv\r\nContent-Length:109\r\n";
 	std::map<std::string, std::string>::iterator it = this->headers.begin();
 	while (it != this->headers.end()){
-		resp += (it->first + ": " + it->second + "\r\n");
+		this->responce += (it->first + ": " + it->second + "\r\n");
 		++it;
 	}
-	resp += "\r\n";
+	this->responce += "\r\n";
 	while (getline(fs, line))
-		resp += line + "\r\n";
+		this->responce += line + "\r\n";
 
 // PRINT RESPONCE
 	// std::cout << "\r\n" << resp << std::endl;

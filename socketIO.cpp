@@ -13,27 +13,26 @@ std::string recv_msg(int fd, int size)
 
 void	readFromClientSocket(int kq, int i, struct kevent *eventList, htCont *conf)
 {
-	// struct kevent evSet;
-	(void)kq;
+	struct kevent evSet;
 	std::string msg = recv_msg(eventList[i].ident, (int)eventList[i].data); //read from socket
 	//считать с сокета запрос от клиента
 	//обработать запрос
 	s_udata *tmp = static_cast<s_udata*>(eventList[i].udata);
 	if (tmp->req == NULL)
 	{
-		tmp->req = new Request(conf);
+		tmp->req = new Request(conf, tmp->ipPort);
 		// EV_SET(&evSet, eventList[i].ident, EVFILT_READ, EV_ADD, 0, 0, static_cast<void*>(tmp));
 		// if (kevent(kq, &evSet, 1, NULL, 0, NULL) == -1)
 		// 	return (printError("kevent() error"));
 	}
 	tmp->req->parseFd(msg);
 
-	// if (req->getStatus() == COMPLETED)
-	// {
-	// 	EV_SET(&evSet, eventList[i].ident, EVFILT_WRITE, EV_ADD, 0, 0, (void*)req);
-	// 	if (kevent(kq, &evSet, 1, NULL, 0, NULL) == -1)
-	// 		return (printError("kevent() error"));
-	// }
+	if (tmp->req->getStatus() == COMPLETED)
+	{
+		EV_SET(&evSet, eventList[i].ident, EVFILT_WRITE, EV_ADD, 0, 0, (void*)tmp);
+		if (kevent(kq, &evSet, 1, NULL, 0, NULL) == -1)
+			return (printError("kevent() error"));
+	}
 
 }
 
@@ -48,8 +47,8 @@ void	writeToClientSocket(int i, struct kevent *eventList)
 		while (getline(fs, line))
 			buf += line + "\n";
 
-		send(eventList[i].ident, buf.c_str(), buf.length(), 0); // buf -> req->getResponce
-		// send(eventList[i].ident, req->getResponce().c_str(), req->getResponce().length(), 0); // buf -> req->getResponce
+		// send(eventList[i].ident, buf.c_str(), buf.length(), 0); // buf -> req->getResponce
+		send(eventList[i].ident, tmp->req->getResponce().c_str(), tmp->req->getResponce().length(), 0); // buf -> req->getResponce
 		tmp->req->status = START_LINE;
 	}
 	//бесконечная отправка

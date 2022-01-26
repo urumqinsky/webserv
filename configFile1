@@ -3,7 +3,7 @@ server   {
 	port 1111;
 	root /Users/rlando/;
 
-	server_name ltheresi.team;
+	server_name localhost;
 	location \  {
 		autoindex off;
 		root /Users/heula/webserv;

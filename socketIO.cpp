@@ -40,7 +40,8 @@ void	writeToClientSocket(int i, struct kevent *eventList)
 {
 	s_udata *tmp = static_cast<s_udata*>(eventList[i].udata);
 	// Request *req = (Request*)(eventList[i].udata);
-	if (tmp->req->getStatus() == COMPLETED) {
+	if (tmp->req->getStatus() == COMPLETED)
+	{
 		std::ifstream fs("/Users/heula/webserv/level1.html");
 		std::string line;
 		std::string buf = "HTTP/1.1 200 OK\r\nServer: webserv\r\nContent-Type: text/html\r\n\r\n";
@@ -49,6 +50,11 @@ void	writeToClientSocket(int i, struct kevent *eventList)
 
 		// send(eventList[i].ident, buf.c_str(), buf.length(), 0); // buf -> req->getResponce
 		send(eventList[i].ident, tmp->req->getResponce().c_str(), tmp->req->getResponce().length(), 0); // buf -> req->getResponce
+		tmp->req->status = START_LINE;
+	}
+	else if (tmp->req->getStatus() == ERROR)
+	{
+		std::cout << "REQEST ERROR" << std::endl;
 		tmp->req->status = START_LINE;
 	}
 	//бесконечная отправка

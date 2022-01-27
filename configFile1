@@ -1,6 +1,6 @@
 server   {
 	ip 127.0.0.1;
-	port 1111;
+	port 4444;
 	root /Users/rlando/;
 
 	server_name localhost;

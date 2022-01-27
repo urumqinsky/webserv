@@ -5,6 +5,7 @@
 
 bool	compareWithListenSockets(unsigned long ident, ServerSocket *sSockets, int nPorts)
 {
+
 	for (int i = 0; i < nPorts; i++)
 	{
 		if ((unsigned int)sSockets[i].getSocketFd() == ident)
@@ -13,34 +14,25 @@ bool	compareWithListenSockets(unsigned long ident, ServerSocket *sSockets, int n
 	return (false);
 }
 
-void	disconnectSocket(int kq, int i, struct kevent *eventList)
-{
-	struct kevent evSet;
-
-	std::cout << "Disconnect " << eventList[i].ident << std::endl;
-	EV_SET(&evSet, eventList[i].ident, eventList[i].filter, EV_DELETE, 0, 0, NULL);
-
-	if (kevent(kq, &evSet, 1, NULL, 0, NULL) == -1)
-		return (printError("kevent() error disconnect"));
-	// close(eventList[i].ident); //закрыть сокет только после удаления второго события
-	// если оно есть (1-ое READ, 2-ое WRITE)
-}
-
-void	acceptNewClient(int kq, int i, struct kevent *eventList)
+void	acceptNewClient(int kq, int i, struct kevent *eventList, htCont *conf)
 {
 	int					newEventFd;
 	struct sockaddr_in	addr;
 	socklen_t			addrLen = sizeof(addr);
-	struct kevent		evSet;
+	struct kevent		evSet[2];
 
 	newEventFd = accept(eventList[i].ident, (struct sockaddr*) &addr, &addrLen);
 	if (newEventFd == -1)
 		return (printError("accept() error"));
+	int opt = 1;
+	setsockopt(newEventFd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 	s_udata *tmp = new s_udata;
-	tmp->req = NULL;
+	tmp->socketStatus = 0;
 	tmp->ipPort = static_cast<lIpPort*>(eventList[i].udata);
-	EV_SET(&evSet, newEventFd, EVFILT_READ, EV_ADD, 0, 0, tmp);
-	if (kevent(kq, &evSet, 1, NULL, 0, NULL) == -1)
+	tmp->req = new Request(conf, tmp->ipPort);
+	EV_SET(&evSet[0], newEventFd, EVFILT_READ, EV_ADD | EV_CLEAR, 0, 0, static_cast<void*>(tmp));
+	EV_SET(&evSet[1], newEventFd, EVFILT_WRITE, EV_ADD | EV_CLEAR, 0, 0, static_cast<void*>(tmp));
+	if (kevent(kq, evSet, 2, NULL, 0, NULL) == -1)
 		return (printError("kevent() error"));
 }
 
@@ -56,14 +48,12 @@ void	watch_loop(int kq, ServerSocket *sSockets, int nPorts, htCont conf)
 			return (printError("kevent() error"));
 		for (int i = 0; i < eventNumber; i++)
 		{
-			if (eventList[i].flags & EV_EOF)
-				disconnectSocket(kq, i, eventList);
-			else if (compareWithListenSockets(eventList[i].ident, sSockets, nPorts))
-				acceptNewClient(kq, i, eventList);
+			if (compareWithListenSockets(eventList[i].ident, sSockets, nPorts))
+				acceptNewClient(kq, i, eventList, new htCont(conf));
 			else if (eventList[i].filter == EVFILT_READ)
-				readFromClientSocket(kq, i, eventList, new htCont(conf));
+				readFromClientSocket(kq, i, eventList);
 			else if (eventList[i].filter == EVFILT_WRITE)
-				writeToClientSocket(i, eventList);
+				writeToClientSocket(kq, i, eventList);
 		}
 	}
 }
@@ -73,7 +63,6 @@ void	makeQueue(ServerSocket *servSockets, int nPorts, ServerConfig &sConfig)
 	int	kq;
 	struct kevent	changeList[nPorts];
 
-	(void)sConfig;
 	kq = kqueue();
 	if (kq == -1)
 		return (printError("kqueue() error"));
@@ -81,7 +70,7 @@ void	makeQueue(ServerSocket *servSockets, int nPorts, ServerConfig &sConfig)
 	{
 		lIpPort *tmp = new lIpPort(servSockets[i].getIpPort());
 		EV_SET(&changeList[i], servSockets[i].getSocketFd(),
-				EVFILT_READ, EV_ADD, 0, 0, static_cast<void*>(tmp));
+				EVFILT_READ, EV_ADD | EV_CLEAR, 0, 0, static_cast<void*>(tmp));
 	}
 	if (kevent(kq, changeList, nPorts, NULL, 0, NULL) == -1)
 		return (printError("kevent() error"));

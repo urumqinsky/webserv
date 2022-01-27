@@ -4,62 +4,64 @@
 std::string recv_msg(int fd, int size)
 {
 
-	char buf[size];
-	bzero(buf, size);
+	char buf[size + 1];
+	bzero(buf, size + 1);
 	recv(fd, buf, size, 0);
 	std::string str = std::string(buf);
 	return str;
 }
 
-void	readFromClientSocket(int kq, int i, struct kevent *eventList, htCont *conf)
+void	deleteEvent(int kq, int i, struct kevent *eventList)
 {
 	struct kevent evSet;
-	std::string msg = recv_msg(eventList[i].ident, (int)eventList[i].data); //read from socket
-	//считать с сокета запрос от клиента
-	//обработать запрос
 	s_udata *tmp = static_cast<s_udata*>(eventList[i].udata);
-	if (tmp->req == NULL)
-	{
-		tmp->req = new Request(conf, tmp->ipPort);
-		// EV_SET(&evSet, eventList[i].ident, EVFILT_READ, EV_ADD, 0, 0, static_cast<void*>(tmp));
-		// if (kevent(kq, &evSet, 1, NULL, 0, NULL) == -1)
-		// 	return (printError("kevent() error"));
-	}
-	tmp->req->parseFd(msg);
 
-	if (tmp->req->getStatus() == COMPLETED)
-	{
-		EV_SET(&evSet, eventList[i].ident, EVFILT_WRITE, EV_ADD, 0, 0, (void*)tmp);
-		if (kevent(kq, &evSet, 1, NULL, 0, NULL) == -1)
-			return (printError("kevent() error"));
-	}
+	std::cout << "Disconnect " << eventList[i].ident << std::endl;
+	EV_SET(&evSet, eventList[i].ident, eventList[i].filter, EV_DELETE, 0, 0, NULL);
 
+	if (kevent(kq, &evSet, 1, NULL, 0, NULL) == -1)
+		return (printError("kevent() error disconnect"));
+	if (tmp->socketStatus == 0)
+		tmp->socketStatus = 1;
+	else
+	{
+		close(eventList[i].ident);
+		delete tmp->ipPort;
+		delete tmp->req;
+		delete tmp;
+	}
 }
 
-void	writeToClientSocket(int i, struct kevent *eventList)
+void	readFromClientSocket(int kq, int i, struct kevent *eventList)
 {
+	if (eventList[i].flags & EV_EOF)
+		deleteEvent(kq, i, eventList);
+	std::string msg = recv_msg(eventList[i].ident, (int)eventList[i].data);
 	s_udata *tmp = static_cast<s_udata*>(eventList[i].udata);
-	// Request *req = (Request*)(eventList[i].udata);
+	tmp->req->parseFd(msg);
+}
+
+void	writeToClientSocket(int kq, int i, struct kevent *eventList)
+{
+	if (eventList[i].flags & EV_EOF)
+		deleteEvent(kq, i, eventList);
+	s_udata *tmp = static_cast<s_udata*>(eventList[i].udata);
 	if (tmp->req->getStatus() == COMPLETED)
 	{
-		std::ifstream fs("/Users/heula/webserv/level1.html");
+		std::ifstream fs("/Users/ltulune/Desktop/webserv/level1.html");
 		std::string line;
-		std::string buf = "HTTP/1.1 200 OK\r\nServer: webserv\r\nContent-Type: text/html\r\n\r\n";
+		std::string buf = "HTTP/1.1 200 OK\r\nServer: webserv\r\nContent-length: 113\r\nContent-Type: text/html\r\n\r\n";
 		while (getline(fs, line))
 			buf += line + "\n";
-
-		// send(eventList[i].ident, buf.c_str(), buf.length(), 0); // buf -> req->getResponce
-		send(eventList[i].ident, tmp->req->getResponce().c_str(), tmp->req->getResponce().length(), 0); // buf -> req->getResponce
-		tmp->req->status = START_LINE;
+		send(eventList[i].ident, buf.c_str(), buf.length(), 0); // buf -> req->getResponce
+		// send(eventList[i].ident, tmp->req->getResponce().c_str(), tmp->req->getResponce().length(), 0); // buf -> req->getResponce
+		tmp->req->setStatus(START_LINE);
 	}
 	else if (tmp->req->getStatus() == ERROR)
 	{
 		std::cout << "REQEST ERROR" << std::endl;
-		tmp->req->status = START_LINE;
+		tmp->req->setStatus(START_LINE);
 	}
-	//бесконечная отправка
-	//нужно разобраться с udata в struct kevent
-	//отправлять нужно только готовый ответ
 }
 
 void	printError(const std::string &comment)

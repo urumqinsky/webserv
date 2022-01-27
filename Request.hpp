@@ -35,7 +35,7 @@ public:
 	void setipPort(int ipPort);
 	Status getStatus();
 	std::string getResponce();
-
+	void setStatus(Status st);
 	void parseFd(std::string req);
 	friend void parseStartLine(Request &other);
 	friend void parseHeader(Request &other);

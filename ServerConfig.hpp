@@ -53,6 +53,7 @@ struct	s_udata
 {
 	lIpPort	*ipPort;
 	Request	*req;
+	int		socketStatus;
 };
 
 class ServerConfig

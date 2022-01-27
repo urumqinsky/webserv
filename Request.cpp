@@ -26,6 +26,11 @@ void Request::setipPort(int ipPort) {
 	this->ip = ipPort;
 }
 
+void Request::setStatus(Status st)
+{
+	this->status = st;
+}
+
 Status Request::getStatus() {
 	return this->status;
 }
@@ -45,7 +50,7 @@ void parseStartLine(Request &other) {
 	delete[] tmp2;
 	if (!(other.method == "GET" || other.method == "POST" || other.method == "DELETE")) {
 		other.status = ERROR;
-		std::cout << "501 - Not Implemented" << std::endl; 
+		std::cout << "501 - Not Implemented" << std::endl;
 	} else if (other.http.empty()) {
 		other.status = ERROR;
 		std::cout << "error2" << std::endl;
@@ -150,14 +155,14 @@ void checkRequest(Request &other) {
 			// else
 				// continue;
 		}
-		else 
+		else
 			++it_begin;
 
 	}
 }
 
 void Request::createResponce() {
-	checkRequest(*this);
+	// checkRequest(*this);
 	std::ifstream fs("/Users/heula/webserv/level1.html");
 	std::string line;
 	// this->responce = "HTTP/1.1 200 OK\r\nServer: webserv\r\nContent-Type: text/html\r\n\r\n";

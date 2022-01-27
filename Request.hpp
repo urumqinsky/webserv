@@ -36,7 +36,7 @@ public:
 	Status getStatus();
 	void setStatus(Status status);
 	std::string getResponce();
-
+	void setStatus(Status st);
 	void parseFd(std::string req);
 	friend void parseStartLine(Request &other);
 	friend void parseHeader(Request &other);

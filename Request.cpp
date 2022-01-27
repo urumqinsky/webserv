@@ -26,11 +26,6 @@ void Request::setipPort(int ipPort) {
 	this->ip = ipPort;
 }
 
-void Request::setStatus(Status st)
-{
-	this->status = st;
-}
-
 Status Request::getStatus() {
 	return this->status;
 }
@@ -175,9 +170,7 @@ void autoindexOn(Request &other) {
 	if ((dir = opendir(dirName.c_str())) != NULL) {
 		while ((file = readdir(dir)) != NULL) {
 			std::string tmp (file->d_name);
-			// tmp.copy(file->d_name, 0, file->d_namlen);
 			tmp = "<p><a href = \"" + other.headers.find("Host")->second + ":" + "1111" + other.path + "/" + tmp + "\">" + tmp + "</a></p>" ;
-			// tmp = "<p><a href = \"" + dirName + "/" + tmp + "\">" + tmp + "</a></p>" ;
 			indexResponce += tmp;
 
 		}

@@ -30,6 +30,11 @@ Status Request::getStatus() {
 	return this->status;
 }
 
+void Request::setStatus(Status status) {
+	this->status = status;
+}
+
+
 std::string Request::getResponce() {
 	return this->responce;
 }
@@ -144,7 +149,6 @@ void checkRequest(Request &other) {
 						std::cout << "HERE" << "\n";
 						// break;
 					}
-
 				}
 			}
 			// else
@@ -156,21 +160,49 @@ void checkRequest(Request &other) {
 	}
 }
 
+void autoindexOn(Request &other) {
+	//to check file or dir
+	DIR *dir;
+	struct dirent *file;
+	std::string indexResponce;
+	std::string dirName = other.conf->genH.root + other.path;
+
+	if ((dir = opendir(dirName.c_str())) != NULL) {
+		while ((file = readdir(dir)) != NULL) {
+			std::string tmp (file->d_name);
+			// tmp.copy(file->d_name, 0, file->d_namlen);
+			tmp = "<p><a href = \"" + other.headers.find("Host")->second + ":" + "1111" + other.path + "/" + tmp + "\">" + tmp + "</a></p>" ;
+			// tmp = "<p><a href = \"" + dirName + "/" + tmp + "\">" + tmp + "</a></p>" ;
+			indexResponce += tmp;
+
+		}
+		other.responce += "<html><head><title></title></head><body>" + indexResponce + "</body></html>\r\n";
+		// closedir(dir);
+	} else {
+		other.status = ERROR;
+	}
+}
+
 void Request::createResponce() {
-	checkRequest(*this);
+	// checkRequest(*this);
 	std::ifstream fs("/Users/heula/webserv/level1.html");
 	std::string line;
 	// this->responce = "HTTP/1.1 200 OK\r\nServer: webserv\r\nContent-Type: text/html\r\n\r\n";
-	this->responce = this->http + " 200 OK\r\nServer: webserv\r\nContent-Length:109\r\n";
+	this->responce = this->http + " 200 OK\r\nServer: webserv\r\nContent-Length: 10000\r\n";
 	std::map<std::string, std::string>::iterator it = this->headers.begin();
 	while (it != this->headers.end()) {
 		this->responce += (it->first + ": " + it->second + "\r\n");
 		++it;
 	}
 	this->responce += "\r\n";
-	while (getline(fs, line))
-		this->responce += line + "\r\n";
+	if (this->conf->genH.autoindex == 1) {
+		autoindexOn(*this);
+	} else {
+		while (getline(fs, line))
+			this->responce += line + "\r\n";
 
+	}
+	// this->responce += "\r\n";
 // PRINT RESPONCE
 	// std::cout << "\r\n" << resp << std::endl;
 }

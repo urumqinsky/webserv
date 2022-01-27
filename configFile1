@@ -13,5 +13,5 @@ server   {
 }
 autoindex on;
 error_page 500 501 502 /error5.html;
-root /Users/ltulune/webserv;
+root /Users/heula/webserv;
 max_body_size 100;

@@ -34,6 +34,7 @@ public:
 	std::string const &getipPort();
 	void setipPort(int ipPort);
 	Status getStatus();
+	void setStatus(Status status);
 	std::string getResponce();
 
 	void parseFd(std::string req);
@@ -44,6 +45,7 @@ public:
 
 	void createResponce();
 	friend void checkRequest(Request &other);
+	friend void autoindexOn(Request &other);
 protected:
 	std::string method;
 	std::string path;

@@ -9,15 +9,15 @@ struct	genCont
 	std::vector<std::string>	index;
 	size_t						bodySizeMax;
 	std::string					root;
-	int							autoindex; // 1 - off , 2 - on , 0 - without autoindex
+	int							autoindex; // 1 - on , 2 - off , 0 - without autoindex
 	std::map<int, std::string>	error_page;
 	genCont();
 };
 
 struct	locCont
 {
-	std::vector<std::string>	locArgs; // path.begin()
-	std::vector<std::string>	methods;
+	std::vector<std::string>	locArgs; // path.begin() file
+	std::vector<std::string>	methods; // method
 	std::string					cgiPath;
 	std::string					cgiExtension;
 	std::vector<struct locCont>	locListL;

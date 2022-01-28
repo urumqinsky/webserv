@@ -66,7 +66,7 @@ void parseStartLine(Request &other) {
 void parseHeader(Request &other) {
 	std::string first;
 	std::string second;
-	if (other.buf.find("\r\n\r\n") != std::string::npos)
+	if (other.buf.find("\r\n\r\n") != std::string::npos || other.buf == "\r\n")
 		other.status = BODY;
 	while (other.buf.find("\r\n") != std::string::npos && other.buf.find("\r\n") != 0) {
 		first = other.buf.substr(0, other.buf.find(":")); // uppercase
@@ -90,7 +90,7 @@ void parseHeader(Request &other) {
 	}
 }
 
-void parseBody(Request &other) {
+void parseBody(Request &other) { // check body for terminal
 	if (other.buf.find("\r\n\r\n") != std::string::npos) {
 		other.body.assign(other.buf, 0, other.buf.length() - 4);
 		other.buf.erase();
@@ -107,10 +107,17 @@ void Request::parseFd(std::string req) {
 		switch (this->status) {
 			case START_LINE:
 				parseStartLine(*this);
+				if (this->status == START_LINE)
+					break;
 			case HEADERS:
 				parseHeader(*this);
+				if (this->status == HEADERS)
+					break;
 			case BODY:
 				parseBody(*this);
+				if (this->status == BODY)
+					break;
+
 			default:
 				break;
 
@@ -128,7 +135,8 @@ void Request::parseFd(std::string req) {
 	// if (CGI)
 	// 	go to Said(*this);
 	// else
-	createResponce();
+	if (this->status == COMPLETED)
+		createResponce();
 	// sleep (10);
 }
 

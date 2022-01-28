@@ -48,18 +48,17 @@ void	writeToClientSocket(int kq, int i, struct kevent *eventList)
 	s_udata *tmp = static_cast<s_udata*>(eventList[i].udata);
 	if (tmp->req->getStatus() == TO_WRITE)
 	{
-		std::ifstream fs("/Users/ltulune/Desktop/webserv/level1.html");
-		std::string line;
-		std::string buf = "HTTP/1.1 200 OK\r\nServer: webserv\r\nContent-length: 113\r\nContent-Type: text/html\r\n\r\n";
-		while (getline(fs, line))
-			buf += line + "\n";
+		// std::ifstream fs("/Users/ltulune/Desktop/webserv/level1.html");
+		// std::string line;
+		// std::string buf = "HTTP/1.1 200 OK\r\nServer: webserv\r\nContent-length: 113\r\nContent-Type: text/html\r\n\r\n";
+		// while (getline(fs, line))
+		// 	buf += line + "\n";
 		// send(eventList[i].ident, buf.c_str(), buf.length(), 0); // buf -> req->getResponce
 		send(eventList[i].ident, tmp->req->getResponce().c_str(), tmp->req->getResponce().length(), 0); // buf -> req->getResponce
 		tmp->req->setStatus(START_LINE);
 	}
-	else if (tmp->req->getStatus() == ERROR)
+	else if (tmp->req->getStatus() == COMPLETED)
 	{
-		std::cout << "REQEST ERROR" << std::endl;
 		tmp->req->setStatus(TO_WRITE);
 	}
 }

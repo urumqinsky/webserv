@@ -141,6 +141,41 @@ void checkRequest(Request &other) {
 
 }
 
+std::string createHtmlFromFile(std::string file) {
+	try {
+		std::fstream fs(file);
+		std::string buf;
+		std::string tmp;
+		std::string result;
+		while (getline(fs, buf))
+			tmp += buf + "<br>";
+		result += "<html><head><title></title></head><body><p>" + tmp + "</p></body></html>\r\n";
+		fs.close();
+		return result;
+	} catch (std::ios_base::failure) {
+		throw -1;
+	}	
+}
+
+std::string searchIndexFile(Request &other) {
+	std::vector<std::string>::iterator it_begin = other.locConf->genL.index.begin();
+	std::vector<std::string>::iterator it_end = other.locConf->genL.index.end();
+
+	while (it_begin != it_end) {
+		try {
+			std::string indexFile = createHtmlFromFile(other.locConf->genL.root + "/" + (*it_begin));
+			return indexFile;
+
+		} catch (int a) {
+			std::cout << "no index file" << "\n";
+		}
+
+		++it_begin;
+	}
+	return NULL;
+}
+
+
 void autoindexOn(Request &other) {
 	DIR *dir;
 	struct dirent *file;
@@ -193,14 +228,19 @@ void Request::createResponce() {
 	// 	++it;
 	// }
 	// this->responce += "\r\n";
-
-	if (this->locConf->genL.autoindex == 1) {
-		autoindexOn(*this);
+	std::string indexFile;
+	if (!this->locConf->genL.index.empty()) {
+		indexFile = searchIndexFile(*this);
+	}
+	if (indexFile == NULL && this->locConf->genL.autoindex == 1) {
+		// if (this->locConf->genL.autoindex == 1) {
+			autoindexOn(*this);
 	} else {
-		std::ifstream fs("/Users/heula/webserv/level1.html");
-		std::string line;
-		while (getline(fs, line))
-			this->responce += line + "\r\n";
+		// std::ifstream fs("/Users/heula/webserv/level1.html");
+		// std::string line;
+		// while (getline(fs, line))
+		// 	this->responce += line + "\r\n";
+		this->responce = indexFile;
 	}
 	// this->responce += "\r\n";
 

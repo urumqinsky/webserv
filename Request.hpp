@@ -47,6 +47,7 @@ public:
 
 	void createResponce();
 	friend void checkRequest(Request &other);
+	friend std::string searchIndexFile(Request &other);
 	friend void autoindexOn(Request &other);
 	friend locCont *findLocation(Request &other);
 	friend serCont *findServer(Request &other);

@@ -20,5 +20,6 @@
 # include <algorithm>
 # include <vector>
 # include <map>
+#include <sstream>
 
 #endif

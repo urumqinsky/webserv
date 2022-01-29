@@ -31,3 +31,7 @@ locCont *findLocation(Request &other) {
     locCont *tmp = NULL;
     return tmp;    
 }
+
+// std::string provaideDate() {
+
+// }

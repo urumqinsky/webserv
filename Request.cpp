@@ -26,7 +26,6 @@ void Request::setStatus(Status status) {
 	this->status = status;
 }
 
-
 std::string Request::getResponce() {
 	return this->responce;
 }
@@ -156,20 +155,20 @@ void checkRequest(Request &other) {
 }
 
 void autoindexOn(Request &other) {
-	//to check file or dir
 	DIR *dir;
 	struct dirent *file;
 	std::string indexResponce;
 	std::ifstream fs;
+	// std::string path = other.path == "/" ?  "" : other.path;
 	std::string dirName = other.locConf->genL.root + other.path;
 
 	if ((dir = opendir(dirName.c_str())) != NULL) {
 		while ((file = readdir(dir)) != NULL) {
 
-			std::string path = other.path == "/" ?  "" : other.path;
 			std::string tmp (file->d_name);
-			// std::string tmp_path = tmp == ".." ? other.path.erase(other.path.rfind("/")) : tmp;
-			tmp = "<p><a href = \"" + path + "/" + tmp + "\">" + tmp + "</a></p>" ;
+			// std::string tmp_path = tmp == ".." ? other.path.erase(path.rfind("/")) : tmp;
+			std::string tmp_path = other.path + "/" + tmp;
+			tmp = "<p><a href = \"" + tmp_path + "\">" + tmp + "</a></p>" ;
 			indexResponce += tmp;
 		}
 		other.responce += "<html><head><title></title></head><body>" + indexResponce + "</body></html>\r\n";
@@ -189,14 +188,8 @@ void autoindexOn(Request &other) {
 		}
 	}
 	
-	
-	
-	// if (fs.open(other.path) && !std::ios::failbit) {
-	// 	std::ifstream fs("/Users/heula/webserv/level1.html");
-	// } else {
-	// 	other.status = ERROR;
-	// }
 }
+
 
 void Request::createResponce() {
 	checkRequest(*this);
@@ -205,13 +198,16 @@ void Request::createResponce() {
 		return ;
 	}
 	// this->responce = "HTTP/1.1 200 OK\r\nServer: webserv\r\nContent-Type: text/html\r\n\r\n";
-	this->responce = this->http + " 200 OK\r\nServer: webserv\r\nContent-Length: 10000\r\nConnection: Keep-Alive\r\n";
-	std::map<std::string, std::string>::iterator it = this->headers.begin();
-	while (it != this->headers.end()) {
-		this->responce += (it->first + ": " + it->second + "\r\n");
-		++it;
-	}
-	this->responce += "\r\n";
+
+	// this->responce = this->http + " 200 OK\r\nServer: webserv\r\nContent-Length: 10000\r\nConnection: Keep-Alive\r\n";
+
+	// std::map<std::string, std::string>::iterator it = this->headers.begin();
+	// while (it != this->headers.end()) {
+	// 	this->responce += (it->first + ": " + it->second + "\r\n");
+	// 	++it;
+	// }
+	// this->responce += "\r\n";
+
 	if (this->locConf->genL.autoindex == 1) {
 		autoindexOn(*this);
 	} else {
@@ -219,9 +215,16 @@ void Request::createResponce() {
 		std::string line;
 		while (getline(fs, line))
 			this->responce += line + "\r\n";
-
 	}
 	// this->responce += "\r\n";
+
+	std::stringstream tmpLength;
+	tmpLength << this->responce.size();
+	std::string contLength = tmpLength.str();
+	this->responce = this->http + " 200 OK\r\nDate: Sat, 29 Jan 2022 14:36:53 GMT\r\nServer: webserv\r\nContent-Length:" +  contLength + "\r\nConnection: Keep-Alive\r\n\r\n" + this->responce;
+
+
+
 // PRINT RESPONCE
 	// std::cout << "\r\n" << resp << std::endl;
 }

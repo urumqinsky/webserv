@@ -10,25 +10,15 @@ Request::Request(htCont *conf, lIpPort *ip) {
 
 Request::~Request() {}
 
-std::string const &Request::getipPort() {
-	return this->ip;
-}
+std::string const &Request::getipPort() { return this->ip; }
 
-void Request::setipPort(int ipPort) {
-	this->ip = ipPort;
-}
+void Request::setipPort(int ipPort) { this->ip = ipPort; }
 
-Status Request::getStatus() {
-	return this->status;
-}
+Status Request::getStatus() { return this->status; }
 
-void Request::setStatus(Status status) {
-	this->status = status;
-}
+void Request::setStatus(Status status) { this->status = status; }
 
-std::string Request::getResponce() {
-	return this->responce;
-}
+std::string Request::getResponce() { return this->responce; }
 
 void Request::makeRequestDefault() {
 	this->status = START_LINE;
@@ -48,8 +38,6 @@ void parseStartLine(Request &other) {
 	std::strcpy (tmp2, tmp.c_str());
 	other.method = std::strtok(tmp2, " ");
 	other.path = std::strtok(NULL, " ");
-	// if (other.path[other.path.length() - 1] == '/')
-	// 	other.path.erase(other.path.length() - 1);
 	other.http = std::strtok(NULL, " ");
 	delete[] tmp2;
 	if (!(other.method == "GET" || other.method == "POST" || other.method == "DELETE")) {
@@ -107,7 +95,6 @@ void Request::parseFd(std::string req) {
 
 	this->buf += req;
 	if (this->buf.find("\r\n") != std::string::npos) {
-		// std::cout << req << std::endl; ///// <---------
 		switch (this->status) {
 			case START_LINE:
 				parseStartLine(*this);
@@ -149,7 +136,7 @@ void checkRequest(Request &other) {
 
 	if((other.locConf = findLocation(other)) == NULL) {
 		other.status = ERROR;
-		std::cout << "error" << "\n";
+		std::cout << "checkRequest error. Location not found" << "\n";
 	}
 
 }
@@ -159,15 +146,14 @@ void autoindexOn(Request &other) {
 	struct dirent *file;
 	std::string indexResponce;
 	std::ifstream fs;
-	// std::string path = other.path == "/" ?  "" : other.path;
 	std::string dirName = other.locConf->genL.root + other.path;
 
 	if ((dir = opendir(dirName.c_str())) != NULL) {
 		while ((file = readdir(dir)) != NULL) {
 
 			std::string tmp (file->d_name);
-			// std::string tmp_path = tmp == ".." ? other.path.erase(path.rfind("/")) : tmp;
-			std::string tmp_path = other.path + "/" + tmp;
+			std::string slash = other.path[other.path.length() - 1] == '/' ? "" : "/";
+			std::string tmp_path = other.path + slash + tmp;
 			tmp = "<p><a href = \"" + tmp_path + "\">" + tmp + "</a></p>" ;
 			indexResponce += tmp;
 		}
@@ -221,7 +207,7 @@ void Request::createResponce() {
 	std::stringstream tmpLength;
 	tmpLength << this->responce.size();
 	std::string contLength = tmpLength.str();
-	this->responce = this->http + " 200 OK\r\nDate: Sat, 29 Jan 2022 14:36:53 GMT\r\nServer: webserv\r\nContent-Length:" +  contLength + "\r\nConnection: Keep-Alive\r\n\r\n" + this->responce;
+	this->responce = this->http + " 200 OK\r\nServer: webserv\r\nContent-Length:" +  contLength + "\r\nConnection: Keep-Alive\r\n\r\n" + this->responce;
 
 
 

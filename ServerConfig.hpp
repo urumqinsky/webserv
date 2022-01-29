@@ -6,7 +6,7 @@
 
 struct	genCont
 {
-	std::vector<std::string>	index;
+	std::vector<std::string>	index; // files, to find in
 	size_t						bodySizeMax;
 	std::string					root;
 	int							autoindex; // 1 - on , 2 - off , 0 - without autoindex

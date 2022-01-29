@@ -56,6 +56,7 @@ public:
 protected:
 	std::string method;
 	std::string path;
+	std::string pathConfCheck;
 	std::string http;
 	std::map <std::string, std::string> headers;
 

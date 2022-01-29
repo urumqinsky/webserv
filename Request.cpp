@@ -1,19 +1,11 @@
 #include "Request.hpp"
 
-//ipPort
-
-// Request::Request() {
-// 	//показать, какой сервер??
-// 	this->status = START_LINE;
-// 	this->chunkStatus = NUM;
-// }
-
 Request::Request(htCont *conf, lIpPort *ip) {
 	this->status = START_LINE;
 	this->chunkStatus = NUM;
-	this->conf = conf;
 	this->ip = ip->ip;
 	this->port = ip->port;
+	this->conf = conf;
 }
 
 Request::~Request() {}
@@ -39,6 +31,17 @@ std::string Request::getResponce() {
 	return this->responce;
 }
 
+void Request::makeRequestDefault() {
+	this->status = START_LINE;
+	this->chunkStatus = NUM;
+	this->method.erase();
+	this->path.erase();
+	this->http.erase();
+	this->headers.erase(this->headers.begin(), this->headers.end());
+	this->body.erase();
+	this->responce.erase();
+
+}
 
 void parseStartLine(Request &other) {
 	std::string tmp = other.buf.substr(0, other.buf.find("\r\n"));
@@ -46,6 +49,8 @@ void parseStartLine(Request &other) {
 	std::strcpy (tmp2, tmp.c_str());
 	other.method = std::strtok(tmp2, " ");
 	other.path = std::strtok(NULL, " ");
+	// if (other.path[other.path.length() - 1] == '/')
+	// 	other.path.erase(other.path.length() - 1);
 	other.http = std::strtok(NULL, " ");
 	delete[] tmp2;
 	if (!(other.method == "GET" || other.method == "POST" || other.method == "DELETE")) {
@@ -142,30 +147,12 @@ void Request::parseFd(std::string req) {
 
 void checkRequest(Request &other) {
 	(void)other;
-	std::vector<serCont>::iterator it_begin = other.conf->serverList.begin();
-	std::vector<serCont>::iterator it_end = other.conf->serverList.end();
-	other.status = ERROR;
-	while(it_begin != it_end && other.status != COMPLETED) {
-		if ((*it_begin).ip == other.ip && (*it_begin).port == other.port && other.status != COMPLETED) {
-			if ((*it_begin).server_name == (other.headers.find("Host"))->second) {
-				for (size_t i = 0; i != (*it_begin).locListS.size() && other.status != COMPLETED; i++) {
-					size_t j = 0;
-					size_t vecEnd = (*it_begin).locListS[i].locArgs.size();
-					for (; j <= vecEnd && (*it_begin).locListS[i].locArgs[j] != other.path; j++);
-					if (j != vecEnd) {
-						other.status = COMPLETED;
-						std::cout << "HERE" << "\n";
-						// break;
-					}
-				}
-			}
-			// else
-				// continue;
-		}
-		else
-			++it_begin;
 
+	if((other.locConf = findLocation(other)) == NULL) {
+		other.status = ERROR;
+		std::cout << "error" << "\n";
 	}
+
 }
 
 void autoindexOn(Request &other) {
@@ -173,37 +160,63 @@ void autoindexOn(Request &other) {
 	DIR *dir;
 	struct dirent *file;
 	std::string indexResponce;
-	std::string dirName = other.conf->genH.root + other.path;
+	std::ifstream fs;
+	std::string dirName = other.locConf->genL.root + other.path;
 
 	if ((dir = opendir(dirName.c_str())) != NULL) {
 		while ((file = readdir(dir)) != NULL) {
-			std::string tmp (file->d_name);
-			tmp = "<p><a href = \"" + other.headers.find("Host")->second + ":" + "1111" + other.path + "/" + tmp + "\">" + tmp + "</a></p>" ;
-			indexResponce += tmp;
 
+			std::string path = other.path == "/" ?  "" : other.path;
+			std::string tmp (file->d_name);
+			// std::string tmp_path = tmp == ".." ? other.path.erase(other.path.rfind("/")) : tmp;
+			tmp = "<p><a href = \"" + path + "/" + tmp + "\">" + tmp + "</a></p>" ;
+			indexResponce += tmp;
 		}
 		other.responce += "<html><head><title></title></head><body>" + indexResponce + "</body></html>\r\n";
-		// closedir(dir);
+		closedir(dir);
 	} else {
-		other.status = ERROR;
+		try {
+			std::fstream fs(dirName);
+			std::string line;
+			std::string tmp;
+			while (getline(fs, line))
+				tmp += line + "<br>";
+			other.responce += "<html><head><title></title></head><body><p>" + tmp + "</p></body></html>\r\n";
+			fs.close();
+		} catch (std::ios_base::failure) {
+			other.status = ERROR;
+			std::cout << "autoindex ERROR" << "\n";
+		}
 	}
+	
+	
+	
+	// if (fs.open(other.path) && !std::ios::failbit) {
+	// 	std::ifstream fs("/Users/heula/webserv/level1.html");
+	// } else {
+	// 	other.status = ERROR;
+	// }
 }
 
 void Request::createResponce() {
-	// checkRequest(*this);
-	std::ifstream fs("/Users/heula/webserv/level1.html");
-	std::string line;
+	checkRequest(*this);
+	if (this->status == ERROR) {
+		std::cout << "create responce ERROR" << "\n";
+		return ;
+	}
 	// this->responce = "HTTP/1.1 200 OK\r\nServer: webserv\r\nContent-Type: text/html\r\n\r\n";
-	this->responce = this->http + " 200 OK\r\nServer: webserv\r\nContent-Length: 10000\r\n";
+	this->responce = this->http + " 200 OK\r\nServer: webserv\r\nContent-Length: 10000\r\nConnection: Keep-Alive\r\n";
 	std::map<std::string, std::string>::iterator it = this->headers.begin();
 	while (it != this->headers.end()) {
 		this->responce += (it->first + ": " + it->second + "\r\n");
 		++it;
 	}
 	this->responce += "\r\n";
-	if (this->conf->genH.autoindex == 1) {
+	if (this->locConf->genL.autoindex == 1) {
 		autoindexOn(*this);
 	} else {
+		std::ifstream fs("/Users/heula/webserv/level1.html");
+		std::string line;
 		while (getline(fs, line))
 			this->responce += line + "\r\n";
 

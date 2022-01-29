@@ -9,6 +9,8 @@ class Request;
 
 #include <cstring>
 
+
+
 enum Status {
 	START_LINE,
 	HEADERS,
@@ -46,6 +48,11 @@ public:
 	void createResponce();
 	friend void checkRequest(Request &other);
 	friend void autoindexOn(Request &other);
+	friend locCont *findLocation(Request &other);
+	friend serCont *findServer(Request &other);
+
+
+	void makeRequestDefault();
 protected:
 	std::string method;
 	std::string path;
@@ -53,7 +60,7 @@ protected:
 	std::map <std::string, std::string> headers;
 
 	htCont *conf;
-
+	locCont *locConf;
 	std::string ip;
 	int port;
 

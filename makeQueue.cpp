@@ -28,10 +28,10 @@ void	acceptNewClient(int kq, int i, struct kevent *eventList, htCont *conf)
 	setsockopt(newEventFd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 	s_udata *tmp = new s_udata;
 	tmp->socketStatus = 0;
-	tmp->ipPort = static_cast<lIpPort*>(eventList[i].udata);
+	tmp->ipPort = new lIpPort(*(static_cast<lIpPort*>(eventList[i].udata)));
 	tmp->req = new Request(conf, tmp->ipPort);
-	EV_SET(&evSet[0], newEventFd, EVFILT_READ, EV_ADD | EV_CLEAR, 0, 0, static_cast<void*>(tmp));
-	EV_SET(&evSet[1], newEventFd, EVFILT_WRITE, EV_ADD | EV_CLEAR, 0, 0, static_cast<void*>(tmp));
+	EV_SET(&evSet[0], newEventFd, EVFILT_READ, EV_ADD, 0, 0, static_cast<void*>(tmp));
+	EV_SET(&evSet[1], newEventFd, EVFILT_WRITE, EV_ADD, 0, 0, static_cast<void*>(tmp));
 	if (kevent(kq, evSet, 2, NULL, 0, NULL) == -1)
 		return (printError("kevent() error"));
 }

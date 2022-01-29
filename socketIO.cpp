@@ -43,10 +43,10 @@ void	readFromClientSocket(int kq, int i, struct kevent *eventList)
 
 void	writeToClientSocket(int kq, int i, struct kevent *eventList)
 {
+	s_udata *tmp = static_cast<s_udata*>(eventList[i].udata);
 	if (eventList[i].flags & EV_EOF)
 		deleteEvent(kq, i, eventList);
-	s_udata *tmp = static_cast<s_udata*>(eventList[i].udata);
-	if (tmp->req->getStatus() == TO_WRITE)
+	else if (tmp->req->getStatus() == TO_WRITE)
 	{
 		// std::ifstream fs("/Users/ltulune/Desktop/webserv/level1.html");
 		// std::string line;
@@ -55,7 +55,8 @@ void	writeToClientSocket(int kq, int i, struct kevent *eventList)
 		// 	buf += line + "\n";
 		// send(eventList[i].ident, buf.c_str(), buf.length(), 0); // buf -> req->getResponce
 		send(eventList[i].ident, tmp->req->getResponce().c_str(), tmp->req->getResponce().length(), 0); // buf -> req->getResponce
-		tmp->req->setStatus(START_LINE);
+		// tmp->req->setStatus(START_LINE);
+		tmp->req->makeRequestDefault();
 	}
 	else if (tmp->req->getStatus() == COMPLETED)
 	{

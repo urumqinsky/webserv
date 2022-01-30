@@ -51,12 +51,10 @@ std::string readFromFile(std::string file) {
 		std::fstream fs(file);
 		std::string buf;
 		std::string tmp;
-		std::string result;
 		while (getline(fs, buf))
 			tmp += buf + "<br>";
-		result += "<html><head><title></title></head><body><p>" + tmp + "</p></body></html>\r\n"; // podumat'
-		fs.close();
-		return result;
+        fs.close();
+		return tmp;
 	} catch (std::ios_base::failure) {
 		throw -1;
 	}	

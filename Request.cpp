@@ -145,22 +145,6 @@ void checkRequest(Request &other) {
 
 }
 
-std::string createHtmlFromFile(std::string file) {
-	try {
-		std::fstream fs(file);
-		std::string buf;
-		std::string tmp;
-		std::string result;
-		while (getline(fs, buf))
-			tmp += buf + "<br>";
-		result += "<html><head><title></title></head><body><p>" + tmp + "</p></body></html>\r\n";
-		fs.close();
-		return result;
-	} catch (std::ios_base::failure) {
-		throw -1;
-	}	
-}
-
 std::string searchIndexFile(Request &other) {
 	std::vector<std::string>::iterator it_begin = other.locConf->genL.index.begin();
 	std::vector<std::string>::iterator it_end = other.locConf->genL.index.end();
@@ -200,13 +184,8 @@ void autoindexOn(Request &other) {
 		closedir(dir);
 	} else {
 		try {
-			std::fstream fs(dirName);
-			std::string line;
-			std::string tmp;
-			while (getline(fs, line))
-				tmp += line + "<br>";
+			std::string tmp = readFromFile(dirName);
 			other.respBody += "<html><head><title></title></head><body><p>" + tmp + "</p></body></html>\r\n";
-			fs.close();
 		} catch (std::ios_base::failure) {
 			other.status = ERROR;
 			std::cout << "autoindex ERROR" << "\n";

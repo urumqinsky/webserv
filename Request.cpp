@@ -114,15 +114,17 @@ void Request::parseFd(std::string req) {
 
 		}
 	}
-//PRINT:
-	std::cout << this->method << "\t" << this->path << "\t" << this->http << std::endl;
-	std::map<std::string, std::string>::iterator it2 = this->headers.begin();
-	while (it2 != this->headers.end()) {
-		std::cout << it2->first << " - " << it2->second << std::endl;
-		++it2;
-	}
-	if (this->body != "")
-		std::cout << this->body << std::endl;
+/////////////////////////////PRINT:
+	// std::cout << this->method << "\t" << this->path << "\t" << this->http << std::endl;
+	// std::map<std::string, std::string>::iterator it2 = this->headers.begin();
+	// while (it2 != this->headers.end()) {
+	// 	std::cout << it2->first << " - " << it2->second << std::endl;
+	// 	++it2;
+	// }
+	// if (this->body != "")
+	// 	std::cout << this->body << std::endl;
+/////////////////////////////PRINT_END
+
 	// if (CGI)
 	// 	go to Said(*this);
 	// else
@@ -232,17 +234,13 @@ void Request::createResponce() {
 	if (!this->locConf->genL.index.empty()) {
 		indexFile = searchIndexFile(*this);
 	}
-	if (indexFile == NULL && this->locConf->genL.autoindex == 1) {
-		// if (this->locConf->genL.autoindex == 1) {
+	if (!indexFile.empty()){
+		this->responce = indexFile;
+	} else if (this->locConf->genL.autoindex == 1) {
 			autoindexOn(*this);
 	} else {
-		// std::ifstream fs("/Users/heula/webserv/level1.html");
-		// std::string line;
-		// while (getline(fs, line))
-		// 	this->responce += line + "\r\n";
-		this->responce = indexFile;
+		this->status = ERROR;
 	}
-	// this->responce += "\r\n";
 
 	std::stringstream tmpLength;
 	tmpLength << this->responce.size();

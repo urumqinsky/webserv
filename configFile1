@@ -6,7 +6,6 @@ server   {
 	server_name localhost;
 	location / {
 	allow GET;
-	index index.html
 	autoindex on;
 	root /Users/heula/webserv;
 	max_body_size 55;
@@ -36,6 +35,7 @@ server   {
 
 }
 autoindex on;
+	index index.html
 error_page 500 501 502 /error5.html;
 root /Users/heula/webserv;
 max_body_size 100;

@@ -12,6 +12,7 @@ server   {
 
 	}
 	location /nginx_test  {
+	index index.html
 		allow GET;
 	autoindex on;
 		root /Users/heula/webserv;
@@ -35,7 +36,6 @@ server   {
 
 }
 autoindex on;
-	index index.html
 error_page 500 501 502 /error5.html;
 root /Users/heula/webserv;
 max_body_size 100;

@@ -9,7 +9,8 @@ class Request;
 
 #include <cstring>
 
-
+std::string provaideDate();
+std::string readFromFile(std::string file);
 
 enum Status {
 	START_LINE,
@@ -79,6 +80,9 @@ private:
 	chunkStatus	chunkStatus;
 
 	std::string responce;
+	std::string respBody;
+
+	std::string serverName;
 	int respCode;
 
 };

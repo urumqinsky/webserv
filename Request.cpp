@@ -6,7 +6,6 @@ Request::Request(htCont *conf, lIpPort *ip) {
 	this->ip = ip->ip;
 	this->port = ip->port;
 	this->conf = conf;
-	this->serverName = "webserv";
 }
 
 Request::~Request() {}
@@ -30,7 +29,6 @@ void Request::makeRequestDefault() {
 	this->headers.erase(this->headers.begin(), this->headers.end());
 	this->body.erase();
 	this->responce.erase();
-	this->respBody.erase();
 
 }
 
@@ -167,7 +165,7 @@ std::string searchIndexFile(Request &other) {
 
 	while (it_begin != it_end) {
 		try {
-			std::string indexFile = readFromFile(other.locConf->genL.root + "/" + (*it_begin));
+			std::string indexFile = createHtmlFromFile(other.locConf->genL.root + "/" + (*it_begin));
 			return indexFile;
 
 		} catch (int a) {
@@ -196,7 +194,7 @@ void autoindexOn(Request &other) {
 			tmp = "<p><a href = \"" + tmp_path + "\">" + tmp + "</a></p>" ;
 			indexResponce += tmp;
 		}
-		other.respBody += "<html><head><title></title></head><body>" + indexResponce + "</body></html>\r\n";
+		other.responce += "<html><head><title></title></head><body>" + indexResponce + "</body></html>\r\n";
 		closedir(dir);
 	} else {
 		try {
@@ -205,7 +203,7 @@ void autoindexOn(Request &other) {
 			std::string tmp;
 			while (getline(fs, line))
 				tmp += line + "<br>";
-			other.respBody += "<html><head><title></title></head><body><p>" + tmp + "</p></body></html>\r\n";
+			other.responce += "<html><head><title></title></head><body><p>" + tmp + "</p></body></html>\r\n";
 			fs.close();
 		} catch (std::ios_base::failure) {
 			other.status = ERROR;
@@ -222,13 +220,22 @@ void Request::createResponce() {
 		std::cout << "create responce ERROR" << "\n";
 		return ;
 	}
+	// this->responce = "HTTP/1.1 200 OK\r\nServer: webserv\r\nContent-Type: text/html\r\n\r\n";
 
+	// this->responce = this->http + " 200 OK\r\nServer: webserv\r\nContent-Length: 10000\r\nConnection: Keep-Alive\r\n";
+
+	// std::map<std::string, std::string>::iterator it = this->headers.begin();
+	// while (it != this->headers.end()) {
+	// 	this->responce += (it->first + ": " + it->second + "\r\n");
+	// 	++it;
+	// }
+	// this->responce += "\r\n";
 	std::string indexFile;
 	if (!this->locConf->genL.index.empty()) {
 		indexFile = searchIndexFile(*this);
 	}
 	if (!indexFile.empty()){
-		this->respBody= indexFile;
+		this->responce = indexFile;
 	} else if (this->locConf->genL.autoindex == 1) {
 			autoindexOn(*this);
 	} else {
@@ -236,14 +243,10 @@ void Request::createResponce() {
 	}
 
 	std::stringstream tmpLength;
-	tmpLength << this->respBody.size();
+	tmpLength << this->responce.size();
 	std::string contLength = tmpLength.str();
-	this->responce = this->http + " 200 OK\r\n";
-	this->responce += "Date: " + provaideDate() + " GMT\r\n";
-	this->responce += "Server: " + this->serverName + "\r\n";
-	this->responce += "Content-Length:" +  contLength + "\r\n";
-	this->responce += "Connection: Keep-Alive\r\n\r\n";
-	this->responce += this->respBody;
+	this->responce = this->http + " 200 OK\r\nServer: webserv\r\nContent-Length:" +  contLength + "\r\nConnection: Keep-Alive\r\n\r\n" + this->responce;
+
 
 
 // PRINT RESPONCE

@@ -39,25 +39,6 @@ locCont *findLocation(Request &other) {
     return tmp;    
 }
 
-std::string provaideDate() {
-    time_t now = time(0);
-    tm *gmt = gmtime(&now);
-    std::string curTime = asctime(gmt);
-    return curTime;
-}
+// std::string provaideDate() {
 
-std::string readFromFile(std::string file) {
-	try {
-		std::fstream fs(file);
-		std::string buf;
-		std::string tmp;
-		std::string result;
-		while (getline(fs, buf))
-			tmp += buf + "<br>";
-		result += "<html><head><title></title></head><body><p>" + tmp + "</p></body></html>\r\n"; // podumat'
-		fs.close();
-		return result;
-	} catch (std::ios_base::failure) {
-		throw -1;
-	}	
-}
+// }

@@ -49,7 +49,7 @@ void	ServerConfig::inheritenceHandler()
 		checkGeneralContent(httpCont.serverList[i].genS, genHTmp);
 		for (size_t j = 0; j < httpCont.serverList[i].locListS.size(); j++)
 		{
-			checkGeneralContent(httpCont.serverList[i].locListS[i].genL,
+			checkGeneralContent(httpCont.serverList[i].locListS[j].genL,
 									httpCont.serverList[i].genS);
 		}
 	}

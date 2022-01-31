@@ -47,7 +47,7 @@ public:
 	friend void	writeToClientSocket(int i, struct kevent *eventList);
 
 	void createResponce();
-	friend void checkRequest(Request &other);
+	// friend void checkRequest(Request &other);
 	friend std::string searchIndexFile(Request &other);
 	friend void autoindexOn(Request &other);
 	friend locCont *findLocation(Request &other);

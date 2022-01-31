@@ -126,10 +126,9 @@ void Request::parseFd(std::string req) {
 	// 	std::cout << this->body << std::endl;
 /////////////////////////////PRINT_END
 	if (this->status == COMPLETED) {
-		checkRequest(*this);
-		if (this->status == ERROR) {
-			std::cout << "create responce ERROR" << "\n";
-			return ;
+		if((this->locConf = findLocation(*this)) == NULL) {
+			this->status = ERROR;
+			std::cout << "checkRequest error. Location not found" << "\n";
 		}
 		if (!this->locConf->cgiPath.empty() && !this->locConf->cgiExtension.empty() && checkIfCgi()) {
 		// 	go to Said(*this);
@@ -149,14 +148,6 @@ bool Request::checkIfCgi() {
 	} else {
 		return 0;
 	}
-}
-
-void checkRequest(Request &other) {
-	if((other.locConf = findLocation(other)) == NULL) {
-		other.status = ERROR;
-		std::cout << "checkRequest error. Location not found" << "\n";
-	}
-
 }
 
 std::string searchIndexFile(Request &other) {

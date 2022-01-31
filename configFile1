@@ -7,7 +7,7 @@ server   {
 	location / {
 	allow GET;
 	autoindex on;
-	cgi ./Tester/cgi_tester;
+	cgi ./testers/cgi_tester;
 	cgi_extension .bla;
 	root /Users/aliya/21school/webserv;
 	max_body_size 55;

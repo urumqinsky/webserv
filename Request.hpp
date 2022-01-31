@@ -74,7 +74,7 @@ private:
 
 	std::string body;
 	std::string buf;
-	int errorStatus;
+	int errorCode;
 
 
 	Status	status;

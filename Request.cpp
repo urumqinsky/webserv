@@ -44,12 +44,14 @@ void parseStartLine(Request &other) {
 	delete[] tmp2;
 	if (!(other.method == "GET" || other.method == "POST" || other.method == "DELETE")) {
 		other.status = ERROR;
+		other.errorCode = 501;
 		std::cout << "501 - Not Implemented" << std::endl;
 	} else if (other.http.empty()) {
 		other.status = ERROR;
 		std::cout << "error2" << std::endl;
 	} else if (other.http != "HTTP/1.1") {
 		other.status = ERROR;
+		other.errorCode = 505;
 		std::cout << "505 - HTTP Version Not Supported" << std::endl;
 	} else {
 		other.buf.erase(0, tmp.length() + 2);
@@ -143,10 +145,10 @@ void Request::parseFd(std::string req) {
 bool Request::checkIfCgi() {
 	std::string file = this->locConf->genL.root + "/" + this->locConf->cgiPath + "/" + this->locConf->cgiExtension;
 	std::ifstream fs(file);
-	if (fs.good()) {
-		return 1;
-	} else {
+	if (fs.bad()) {
 		return 0;
+	} else {
+		return 1;
 	}
 }
 

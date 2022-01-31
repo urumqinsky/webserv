@@ -110,7 +110,6 @@ void Request::parseFd(std::string req) {
 				parseBody(*this);
 				if (this->status == BODY)
 					break;
-
 			default:
 				break;
 
@@ -126,18 +125,33 @@ void Request::parseFd(std::string req) {
 	// if (this->body != "")
 	// 	std::cout << this->body << std::endl;
 /////////////////////////////PRINT_END
-
-	// if (CGI)
-	// 	go to Said(*this);
-	// else
-	if (this->status == COMPLETED)
-		createResponce();
+	if (this->status == COMPLETED) {
+		checkRequest(*this);
+		if (this->status == ERROR) {
+			std::cout << "create responce ERROR" << "\n";
+			return ;
+		}
+		if (!this->locConf->cgiPath.empty() && !this->locConf->cgiExtension.empty() && checkIfCgi()) {
+		// 	go to Said(*this);
+			std::cout << "CGI\n";
+		} else {
+			createResponce();
+		}
+	}
 	// sleep (10);
 }
 
-void checkRequest(Request &other) {
-	(void)other;
+bool Request::checkIfCgi() {
+	std::string file = this->locConf->genL.root + "/" + this->locConf->cgiPath + "/" + this->locConf->cgiExtension;
+	std::ifstream fs(file);
+	if (fs.good()) {
+		return 1;
+	} else {
+		return 0;
+	}
+}
 
+void checkRequest(Request &other) {
 	if((other.locConf = findLocation(other)) == NULL) {
 		other.status = ERROR;
 		std::cout << "checkRequest error. Location not found" << "\n";
@@ -173,7 +187,6 @@ void autoindexOn(Request &other) {
 
 	if ((dir = opendir(dirName.c_str())) != NULL) {
 		while ((file = readdir(dir)) != NULL) {
-
 			std::string tmp (file->d_name);
 			std::string slash = other.path[other.path.length() - 1] == '/' ? "" : "/";
 			std::string tmp_path = other.path + slash + tmp;
@@ -196,12 +209,6 @@ void autoindexOn(Request &other) {
 
 
 void Request::createResponce() {
-	checkRequest(*this);
-	if (this->status == ERROR) {
-		std::cout << "create responce ERROR" << "\n";
-		return ;
-	}
-
 	std::string indexFile;
 	if (!this->locConf->genL.index.empty()) {
 		indexFile = searchIndexFile(*this);

@@ -52,6 +52,7 @@ public:
 	friend void autoindexOn(Request &other);
 	friend locCont *findLocation(Request &other);
 	friend serCont *findServer(Request &other);
+	bool checkIfCgi();
 
 
 	void makeRequestDefault();

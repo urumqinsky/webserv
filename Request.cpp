@@ -2,11 +2,13 @@
 
 Request::Request(htCont *conf, lIpPort *ip) {
 	this->status = START_LINE;
+	this->errorCode = 200;
 	this->chunkStatus = NUM;
 	this->ip = ip->ip;
 	this->port = ip->port;
 	this->conf = conf;
 	this->serverName = "webserv";
+	setAllErrorCodes();
 }
 
 Request::~Request() {}
@@ -23,6 +25,7 @@ std::string Request::getResponce() { return this->responce; }
 
 void Request::makeRequestDefault() {
 	this->status = START_LINE;
+	// this->errorCode = 200;
 	this->chunkStatus = NUM;
 	this->method.erase();
 	this->path.erase();
@@ -32,6 +35,16 @@ void Request::makeRequestDefault() {
 	this->responce.erase();
 	this->respBody.erase();
 
+}
+
+void Request::setAllErrorCodes() {
+	int code[] = {100, 101, 200, 201, 202, 203, 204, 205, 206, 300, 301, 302, 303, 304, 305, 307, 400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 426, 500, 501, 502, 503, 504, 505};
+	std::string reason[] = {"CONTINUE", "SWITCHING PROTOCOLS", "OK", "CREATED", "ACCEPTED", "NON-AUTHORITATIVE INFORMATION", "NO CONTENT", "RESET CONTENT", "PARTIAL CONTENT", "MULTIPLE CHOICES", "MOVED PERMANENTLY", "FOUND", "SEE OTHER", "NOT MODIFIED", "USE PROXY", "TEMPORARY REDIRECT", "BAD REQUEST", "UNAUTHORIZED", "PAYMENT REQUIRED", "FORBIDDEN", "NOT FOUND", "METHOD NOT ALLOWED", "NOT ACCEPTABLE", "PROXY AUTHENTICATION REQUIRED", "REQUEST TIMEOUT", "CONFLICT", "GONE", "LENGTH REQUIRED", "PRECONDITION FAILED", "PAYLOAD TOO LARGE", "URI TOO LONG", "UNSUPPORTED MEDIA TYPE", "RANGE NOT SATISFIABLE", "EXPECTATION FAILED", "UPGRADE REQUIRED", "INTERNAL SERVER ERROR", "NOT IMPLEMENTED", "BAD GATEWAY", "SERVICE UNAVAILABLE", "GATEWAY TIMEOUT", "HTTP VERSION NOT SUPPORTED"};
+	size_t size;
+	for (size = 0; code[size] != 505; size++);
+	for (size_t i = 0; i <= size; i++) {
+		this->allErrorCodes.insert(std::pair<int, std::string>(code[i], reason[i]));
+	}
 }
 
 void parseStartLine(Request &other) {
@@ -45,14 +58,12 @@ void parseStartLine(Request &other) {
 	if (!(other.method == "GET" || other.method == "POST" || other.method == "DELETE")) {
 		other.status = ERROR;
 		other.errorCode = 501;
-		std::cout << "501 - Not Implemented" << std::endl;
 	} else if (other.http.empty()) {
 		other.status = ERROR;
 		std::cout << "error2" << std::endl;
 	} else if (other.http != "HTTP/1.1") {
 		other.status = ERROR;
 		other.errorCode = 505;
-		std::cout << "505 - HTTP Version Not Supported" << std::endl;
 	} else {
 		other.buf.erase(0, tmp.length() + 2);
 		other.status = HEADERS;
@@ -102,7 +113,7 @@ void Request::parseFd(std::string req) {
 		switch (this->status) {
 			case START_LINE:
 				parseStartLine(*this);
-				if (this->status == START_LINE)
+				if (this->status == START_LINE || this->status == ERROR)
 					break;
 			case HEADERS:
 				parseHeader(*this);
@@ -127,17 +138,24 @@ void Request::parseFd(std::string req) {
 	// if (this->body != "")
 	// 	std::cout << this->body << std::endl;
 /////////////////////////////PRINT_END
-	if (this->status == COMPLETED) {
+	if (this->status == COMPLETED || this->status == ERROR) {
 		if((this->locConf = findLocation(*this)) == NULL) {
-			this->status = ERROR;
+			if (this->status != ERROR) {
+				this->status = ERROR;
+				this->errorCode = 500;
+			}
 			std::cout << "checkRequest error. Location not found" << "\n";
-		}
-		if (!this->locConf->cgiPath.empty() && !this->locConf->cgiExtension.empty() && checkIfCgi()) {
-		// 	go to Said(*this);
-			std::cout << "CGI\n";
 		} else {
-			createResponce();
+			if (!this->locConf->cgiPath.empty() && !this->locConf->cgiExtension.empty() && checkIfCgi()) {
+			// 	go to Said(*this);
+				std::cout << "CGI\n";
+			} else {
+				createBody();
+			}
 		}
+		if (this->status == ERROR)
+			createErrorBody(); 
+		createResponce();
 	}
 	// sleep (10);
 }
@@ -157,19 +175,15 @@ std::string searchIndexFile(Request &other) {
 	std::vector<std::string>::iterator it_end = other.locConf->genL.index.end();
 
 	while (it_begin != it_end) {
-		try {
-			std::string indexFile = readFromFile(other.locConf->genL.root + "/" + (*it_begin));
+		std::string indexFile = readFromFile(other.locConf->genL.root + "/" + (*it_begin));
+		if (!indexFile.empty()) {
 			return indexFile;
-
-		} catch (int a) {
-			std::cout << "no index file" << "\n";
+		} else {
+			++it_begin;
 		}
-
-		++it_begin;
 	}
 	return NULL;
 }
-
 
 void autoindexOn(Request &other) {
 	DIR *dir;
@@ -189,11 +203,12 @@ void autoindexOn(Request &other) {
 		other.respBody += "<html><head><title></title></head><body>" + indexResponce + "</body></html>\r\n";
 		closedir(dir);
 	} else {
-		try {
-			std::string tmp = readFromFile(dirName);
+		std::string tmp = readFromFile(dirName);
+		if (!tmp.empty()) {
 			other.respBody += "<html><head><title></title></head><body><p>" + tmp + "</p></body></html>\r\n";
-		} catch (std::ios_base::failure) {
+		} else {
 			other.status = ERROR;
+			other.errorCode = 404;
 			std::cout << "autoindex ERROR" << "\n";
 		}
 	}
@@ -201,7 +216,7 @@ void autoindexOn(Request &other) {
 }
 
 
-void Request::createResponce() {
+void Request::createBody() {
 	std::string indexFile;
 	if (!this->locConf->genL.index.empty()) {
 		indexFile = searchIndexFile(*this);
@@ -212,19 +227,36 @@ void Request::createResponce() {
 			autoindexOn(*this);
 	} else {
 		this->status = ERROR;
+		this->errorCode = 404;
 	}
+
+}
+
+void Request::createErrorBody() {
+	if (this->locConf && this->locConf->genL.error_page.find(this->errorCode) != this->locConf->genL.error_page.end()) {
+		std::string errorFile = this->locConf->genL.error_page.find(this->errorCode)->second;
+		this->respBody = readFromFile(errorFile);
+		return ;
+	}
+	this->respBody = "<html><head><title></title></head><body><p>ERROR NOT FOUND</p></body></html>\r\n";
+}
+
+
+void Request::createResponce() {
 
 	std::stringstream tmpLength;
 	tmpLength << this->respBody.size();
 	std::string contLength = tmpLength.str();
-	this->responce = this->http + " 200 OK\r\n";
+	// this->responce = this->http + " 200 OK\r\n";
+	this->responce = this->http  + " " +  createStatusLine(this->errorCode, this->allErrorCodes) + "\r\n";
 	this->responce += "Date: " + provaideDate() + " GMT\r\n";
 	this->responce += "Server: " + this->serverName + "\r\n";
 	this->responce += "Content-Length:" +  contLength + "\r\n";
 	this->responce += "Connection: Keep-Alive\r\n\r\n";
 	this->responce += this->respBody;
+	this->status = COMPLETED;
 
 
 // PRINT RESPONCE
-	// std::cout << "\r\n" << resp << std::endl;
+	// std::cout << "\r\n" << this->responce << std::endl;
 }

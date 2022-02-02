@@ -46,16 +46,23 @@ std::string provaideDate() {
     return curTime;
 }
 
+std::string createStatusLine(int code, std::map<int, std::string> &m) {
+    std::stringstream codeStr;
+    codeStr << code;
+    std::string result = codeStr.str() + " " + m.find(code)->second;
+    return result;
+}
+
 std::string readFromFile(std::string file) {
-	try {
 		std::fstream fs(file);
 		std::string buf;
 		std::string tmp;
-		while (getline(fs, buf))
-			tmp += buf + "<br>";
-        fs.close();
-		return tmp;
-	} catch (std::ios_base::failure) {
-		throw -1;
-	}	
+        if (fs.good()) {
+            while (getline(fs, buf))
+                tmp += buf + "<br>";
+            fs.close();
+            return tmp;
+        }
+        return NULL;
+
 }

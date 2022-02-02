@@ -11,6 +11,7 @@ class Request;
 
 std::string provaideDate();
 std::string readFromFile(std::string file);
+std::string createStatusLine(int code, std::map<int, std::string> &m);
 
 enum Status {
 	START_LINE,
@@ -40,6 +41,7 @@ public:
 	Status getStatus();
 	void setStatus(Status status);
 	std::string getResponce();
+	void setAllErrorCodes();
 	void parseFd(std::string req);
 	friend void parseStartLine(Request &other);
 	friend void parseHeader(Request &other);
@@ -47,6 +49,8 @@ public:
 	friend void	writeToClientSocket(int i, struct kevent *eventList);
 
 	void createResponce();
+	void createBody();
+	void createErrorBody();
 	// friend void checkRequest(Request &other);
 	friend std::string searchIndexFile(Request &other);
 	friend void autoindexOn(Request &other);
@@ -85,6 +89,8 @@ private:
 
 	std::string serverName;
 	int respCode;
+
+	std::map<int, std::string> allErrorCodes;
 
 };
 

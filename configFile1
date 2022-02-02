@@ -4,15 +4,7 @@ server   {
 	root /Users/aliya/21school/webserv;
 
 	server_name localhost;
-	location / {
-	allow GET;
-	autoindex on;
-	cgi ./testers/cgi_tester;
-	cgi_extension .bla;
-	root /Users/aliya/21school/webserv;
-	max_body_size 55;
 
-	}
 	location /nginx_test  {
 	index index.html
 		allow GET;

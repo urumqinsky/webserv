@@ -249,7 +249,7 @@ void Request::createResponce() {
 	std::string contLength = tmpLength.str();
 	// this->responce = this->http + " 200 OK\r\n";
 	this->responce = this->http  + " " +  createStatusLine(this->errorCode, this->allErrorCodes) + "\r\n";
-	this->responce += "Date: " + provaideDate() + " GMT\r\n";
+	this->responce += "Date: " + provaideDate() + "\r\n";
 	this->responce += "Server: " + this->serverName + "\r\n";
 	this->responce += "Content-Length:" +  contLength + "\r\n";
 	this->responce += "Connection: Keep-Alive\r\n\r\n";
@@ -258,5 +258,5 @@ void Request::createResponce() {
 
 
 // PRINT RESPONCE
-	// std::cout << "\r\n" << this->responce << std::endl;
+	std::cout << "\r\n" << this->responce << std::endl;
 }

@@ -43,6 +43,7 @@ std::string provaideDate() {
     time_t now = time(0);
     tm *gmt = gmtime(&now);
     std::string curTime = asctime(gmt);
+    curTime = curTime.erase(curTime.length() - 1) + " GMT";
     return curTime;
 }
 

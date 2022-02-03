@@ -4,6 +4,14 @@ server   {
 	root /Users/aliya/21school/webserv;
 
 	server_name localhost;
+	location / {
+		allow GET;
+		autoindex off;
+
+		alias ./testers/YoupiBanane;
+		cgi ./testers/cgi_tester;
+		cgi_extension .bla;
+	}
 
 	location /nginx_test  {
 	index index.html

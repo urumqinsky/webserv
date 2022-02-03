@@ -155,6 +155,8 @@ void Request::parseFd(std::string req) {
 			if (!this->locConf->cgiPath.empty() && !this->locConf->cgiExtension.empty() && checkIfCgi()) {
 			// 	go to Said(*this);
 				std::cout << "CGI\n";
+				this->respBody = "<html><head><title></title></head><body><p>CGI</p></body></html>\r\n";
+
 			} else {
 				createBody();
 			}
@@ -167,9 +169,10 @@ void Request::parseFd(std::string req) {
 }
 
 bool Request::checkIfCgi() {
-	std::string file = this->locConf->genL.root + "/" + this->locConf->cgiPath + "/" + this->locConf->cgiExtension;
-	std::ifstream fs(file);
-	if (fs.bad()) {
+	std::string file = this->locConf->genL.root + "/" + this->locConf->cgiPath + this->locConf->cgiExtension;
+	std::ifstream fs;
+	fs.open(file);
+	if (!fs.is_open()) {
 		return 0;
 	} else {
 		return 1;
@@ -228,7 +231,7 @@ void Request::createBody() {
 		indexFile = searchIndexFile(*this);
 	}
 	if (!indexFile.empty()){
-		this->respBody= indexFile;
+		this->respBody = indexFile;
 	} else if (this->locConf->genL.autoindex == 1) {
 			autoindexOn(*this);
 	} else {

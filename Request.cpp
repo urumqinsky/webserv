@@ -173,6 +173,7 @@ bool Request::checkIfCgi() {
 	std::ifstream fs;
 	fs.open(file);
 	if (!fs.is_open()) {
+		fs.close();
 		return 0;
 	} else {
 		return 1;
@@ -182,16 +183,16 @@ bool Request::checkIfCgi() {
 std::string searchIndexFile(Request &other) {
 	std::vector<std::string>::iterator it_begin = other.locConf->genL.index.begin();
 	std::vector<std::string>::iterator it_end = other.locConf->genL.index.end();
-
+	std::string indexFile;
 	while (it_begin != it_end) {
-		std::string indexFile = readFromFile(other.locConf->genL.root + "/" + (*it_begin));
+		indexFile = readFromFile(other.locConf->genL.root + "/" + (*it_begin));
 		if (!indexFile.empty()) {
 			return indexFile;
 		} else {
 			++it_begin;
 		}
 	}
-	return NULL;
+	return indexFile;
 }
 
 void autoindexOn(Request &other) {

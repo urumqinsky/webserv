@@ -55,7 +55,8 @@ std::string createStatusLine(int code, std::map<int, std::string> &m) {
 }
 
 std::string readFromFile(std::string file) {
-		std::fstream fs(file);
+		std::ifstream fs(file);
+        // fs.open(file);
 		std::string buf;
 		std::string tmp;
         if (fs.good()) {
@@ -64,6 +65,6 @@ std::string readFromFile(std::string file) {
             fs.close();
             return tmp;
         }
-        return NULL;
+        return tmp;
 
 }

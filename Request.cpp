@@ -247,7 +247,7 @@ void Request::createBody() {
 
 void Request::createErrorBody() {
 	if (this->locConf && this->locConf->genL.error_page.find(this->errorCode) != this->locConf->genL.error_page.end()) {
-		std::string errorFile = this->locConf->genL.error_page.find(this->errorCode)->second;
+		std::string errorFile = this->locConf->genL.root + this->locConf->genL.error_page.find(this->errorCode)->second;
 		this->respBody = readFromFile(errorFile);
 		return ;
 	}
@@ -260,7 +260,6 @@ void Request::createResponce() {
 	std::stringstream tmpLength;
 	tmpLength << this->respBody.size();
 	std::string contLength = tmpLength.str();
-	// this->responce = this->http + " 200 OK\r\n";
 	this->responce = this->http  + " " +  createStatusLine(this->errorCode, this->allErrorCodes) + "\r\n";
 	this->responce += "Date: " + provaideDate() + "\r\n";
 	this->responce += "Server: " + this->serverName + "\r\n";
@@ -271,5 +270,5 @@ void Request::createResponce() {
 
 
 // PRINT RESPONCE
-	std::cout << "\r\n" << this->responce << std::endl;
+	// std::cout << "\r\n" << this->responce << std::endl;
 }

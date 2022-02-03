@@ -38,6 +38,7 @@ server   {
 
 }
 autoindex on;
-error_page 500 501 502 /error5.html;
+error_page 500 501 502 /errors/5.html;
+error_page 404 /errors/404.html;
 root /Users/aliya/21school/webserv;
 max_body_size 100;

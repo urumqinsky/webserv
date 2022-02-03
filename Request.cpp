@@ -82,7 +82,10 @@ void parseHeader(Request &other) {
 	if (other.buf.find("\r\n\r\n") != std::string::npos || other.buf == "\r\n")
 		other.status = BODY;
 	while (other.buf.find("\r\n") != std::string::npos && other.buf.find("\r\n") != 0) {
-		first = other.buf.substr(0, other.buf.find(":")); // uppercase
+		first = other.buf.substr(0, other.buf.find(":"));
+		size_t size = first.length();
+		for (size_t i = 0; i < size; ++i)
+			first[i] = (unsigned char)std::toupper(first[i]);
 		second = other.buf.substr(other.buf.find(":") + 1, other.buf.find("\r\n") - first.length() - 1);
 		other.headers.insert(std::pair<std::string, std::string>(first, second));
 		other.buf.erase(0, first.length() + second.length() + 2 + 1);
@@ -98,8 +101,8 @@ void parseHeader(Request &other) {
 			it->second.assign(it->second, i, j - i + 1);
 			++it;
 		}
-		std::string tmp = other.headers.find("Host")->second;
-		other.headers.find("Host")->second = tmp.substr(0, tmp.find(":"));
+		std::string tmp = other.headers.find("HOST")->second;
+		other.headers.find("HOST")->second = tmp.substr(0, tmp.find(":"));
 	}
 }
 

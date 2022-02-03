@@ -6,7 +6,7 @@ serCont *findServer(Request &other) {
     std::vector<serCont>::iterator it_end = other.conf->serverList.end();
     while(it_begin != it_end) {
     	if ((*it_begin).ip == other.ip && (*it_begin).port == other.port) {
-    		if ((*it_begin).server_name == (other.headers.find("Host"))->second) 
+    		if ((*it_begin).server_name == (other.headers.find("HOST"))->second) 
             return &(*it_begin);
         }
         ++it_begin;
@@ -61,7 +61,7 @@ std::string readFromFile(std::string file) {
 		std::string tmp;
         if (fs.good()) {
             while (getline(fs, buf))
-                tmp += buf + "<br>";
+                tmp += buf;
             fs.close();
             return tmp;
         }

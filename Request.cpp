@@ -49,24 +49,30 @@ void Request::setAllErrorCodes() {
 
 void parseStartLine(Request &other) {
 	std::string tmp = other.buf.substr(0, other.buf.find("\r\n"));
-	char *tmp2 = new char[tmp.length()+1];
-	std::strcpy (tmp2, tmp.c_str());
-	other.method = std::strtok(tmp2, " ");
-	other.path = std::strtok(NULL, " ");
-	other.http = std::strtok(NULL, " ");
-	delete[] tmp2;
-	if (!(other.method == "GET" || other.method == "POST" || other.method == "DELETE")) {
+	if (tmp.empty()) {
 		other.status = ERROR;
-		other.errorCode = 501;
-	} else if (other.http.empty()) {
-		other.status = ERROR;
-		std::cout << "error2" << std::endl;
-	} else if (other.http != "HTTP/1.1") {
-		other.status = ERROR;
-		other.errorCode = 505;
+		other.errorCode = 404;
 	} else {
-		other.buf.erase(0, tmp.length() + 2);
-		other.status = HEADERS;
+		char *tmp2 = new char[tmp.length()+1];
+		std::strcpy (tmp2, tmp.c_str());
+		other.method = std::strtok(tmp2, " ");
+		other.path = std::strtok(NULL, " ");
+		other.http = std::strtok(NULL, " ");
+		delete[] tmp2;
+		if (!(other.method == "GET" || other.method == "POST" || other.method == "DELETE")) {
+			other.status = ERROR;
+			other.errorCode = 501;
+		} else if (other.http.empty()) {
+			other.status = ERROR;
+			std::cout << "error2" << std::endl;
+		} else if (other.http != "HTTP/1.1") {
+			other.status = ERROR;
+			other.errorCode = 505;
+		} else {
+			other.buf.erase(0, tmp.length() + 2);
+			other.status = HEADERS;
+		}
+
 	}
 }
 

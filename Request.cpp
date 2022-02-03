@@ -111,7 +111,12 @@ void parseBody(Request &other) { // check body for terminal
 		other.body.assign(other.buf, 0, other.buf.length() - 4);
 		other.buf.erase();
 	}
-	other.status = COMPLETED;
+	if (other.method == "POST" && other.body.empty()) {
+		other.status = ERROR;
+		other.errorCode = 400;
+	} else {
+		other.status = COMPLETED;
+	}
 }
 
 
@@ -251,7 +256,7 @@ void Request::createErrorBody() {
 		this->respBody = readFromFile(errorFile);
 		return ;
 	}
-	this->respBody = "<html><head><title></title></head><body><p>ERROR NOT FOUND</p></body></html>\r\n";
+	this->respBody = "<html><head><title></title></head><body><p>ERROR PAGE IS NOT FOUND</p></body></html>\r\n";
 }
 
 

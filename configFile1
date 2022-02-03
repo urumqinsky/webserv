@@ -1,35 +1,42 @@
 server   {
 	ip 127.0.0.1;
 	port 4444;
-	root /Users/aliya/21school/webserv;
+	root /Users/ltulune/Desktop/webserv;
 
 	server_name localhost;
 
-	location /nginx_test  {
-	index index.html
+	location /  {
+		index index.html
 		allow GET;
-	autoindex on;
-		root /Users/aliya/21school/webserv;
+		autoindex on;
+		root /Users/ltulune/Desktop/webserv;
 		max_body_size 55;
-
+		cgi ./;
+		cgi_extension .cprog;
+	}
+	location /nginx_test  {
+		index index.html
+		allow GET;
+		autoindex on;
+		root /Users/ltulune/Desktop/webserv;
+		max_body_size 55;
 	}
 		location /nginx_test/data  {
 		allow GET;
-	autoindex on;
-		root /Users/aliya/21school/webserv;
+		autoindex on;
+		root /Users/ltulune/Desktop/webserv;
 		max_body_size 55;
 
 	}
 	location /configFile1  {
 		allow GET;
 		autoindex on;
-		root /Users/aliya/21school/webserv;
+		root /Users/ltulune/Desktop/webserv;
 		max_body_size 55;
-
 	}
 
 }
 autoindex on;
 error_page 500 501 502 /error5.html;
-root /Users/aliya/21school/webserv;
+root /Users/ltulune/Desktop/webserv;
 max_body_size 100;

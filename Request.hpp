@@ -57,8 +57,8 @@ public:
 	friend locCont *findLocation(Request &other);
 	friend serCont *findServer(Request &other);
 	bool checkIfCgi();
-
-
+	void cgiHandler();
+	
 	void makeRequestDefault();
 protected:
 	std::string method;

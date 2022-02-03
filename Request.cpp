@@ -51,6 +51,8 @@ void parseStartLine(Request &other) {
 	std::string tmp = other.buf.substr(0, other.buf.find("\r\n"));
 	char *tmp2 = new char[tmp.length()+1];
 	std::strcpy (tmp2, tmp.c_str());
+	if (tmp.length() == 0)
+		return ;
 	other.method = std::strtok(tmp2, " ");
 	other.path = std::strtok(NULL, " ");
 	other.http = std::strtok(NULL, " ");
@@ -146,15 +148,16 @@ void Request::parseFd(std::string req) {
 			}
 			std::cout << "checkRequest error. Location not found" << "\n";
 		} else {
-			if (!this->locConf->cgiPath.empty() && !this->locConf->cgiExtension.empty() && checkIfCgi()) {
-			// 	go to Said(*this);
-				std::cout << "CGI\n";
+			if (!this->locConf->cgiPath.empty()
+				&& !this->locConf->cgiExtension.empty() && checkIfCgi()) {
+				cgiHandler();
+				return ;
 			} else {
 				createBody();
 			}
 		}
 		if (this->status == ERROR)
-			createErrorBody(); 
+			createErrorBody();
 		createResponce();
 	}
 	// sleep (10);
@@ -212,7 +215,7 @@ void autoindexOn(Request &other) {
 			std::cout << "autoindex ERROR" << "\n";
 		}
 	}
-	
+
 }
 
 
@@ -243,7 +246,6 @@ void Request::createErrorBody() {
 
 
 void Request::createResponce() {
-
 	std::stringstream tmpLength;
 	tmpLength << this->respBody.size();
 	std::string contLength = tmpLength.str();
@@ -259,4 +261,30 @@ void Request::createResponce() {
 
 // PRINT RESPONCE
 	std::cout << "\r\n" << this->responce << std::endl;
+}
+
+void	Request::cgiHandler()
+{
+	int fd[2]; // fd[0] - read, fd[1] - write
+	if (pipe(fd) == -1)
+		printError("pipe() error");
+	int pid = fork();
+	if (pid < 0)
+		printError("fork() error");
+	if (pid == 0)
+	{
+		dup2(fd[1], STDOUT_FILENO);
+		close(fd[0]);
+		close(fd[1]);
+		//find cgi file and put it with full path to execve
+		execve("/Users/ltulune/Desktop/webserv/hello.cprog", 0, 0);
+		//
+	}
+	close(fd[1]);
+	char buf[200];
+	memset(buf, 0, 200);
+	read(fd[0], buf, 200);
+	close(fd[0]);
+	this->responce = std::string(buf);
+	this->status = COMPLETED;
 }

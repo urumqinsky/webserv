@@ -175,15 +175,20 @@ void Request::parseFd(std::string req) {
 }
 
 bool Request::checkIfCgi() {
-	std::string file = this->locConf->genL.root + "/" + this->locConf->cgiPath + this->locConf->cgiExtension;
-	std::ifstream fs;
-	fs.open(file);
-	if (!fs.is_open()) {
-		fs.close();
-		return 0;
-	} else {
-		return 1;
+	std::string tmpCgiPath = this->locConf->cgiPath + this->locConf->cgiExtension;
+	if (!tmpCgiPath.compare(0, 2, "./")) {
+		tmpCgiPath.erase(0, 1);
 	}
+	if (this->path == tmpCgiPath) {
+		std::string file = this->locConf->genL.root + "/" + this->locConf->cgiPath + this->locConf->cgiExtension;
+		std::ifstream fs;
+		fs.open(file);
+		if (fs.is_open()) {
+			fs.close();
+			return 1;
+		}
+	}
+	return 0;
 }
 
 std::string searchIndexFile(Request &other) {
@@ -208,7 +213,8 @@ void autoindexOn(Request &other) {
 	std::ifstream fs;
 	std::string dirName = other.locConf->genL.root + other.path;
 
-	if ((dir = opendir(dirName.c_str())) != NULL) {
+	if ((dir = opendir(dirName.c_str())) != NULL) { 
+		//show files in path:
 		while ((file = readdir(dir)) != NULL) {
 			std::string tmp (file->d_name);
 			std::string slash = other.path[other.path.length() - 1] == '/' ? "" : "/";
@@ -221,6 +227,7 @@ void autoindexOn(Request &other) {
 	} else {
 		std::string tmp = readFromFile(dirName);
 		if (!tmp.empty()) {
+			// show file:
 			other.respBody += "<html><head><title></title></head><body><p>" + tmp + "</p></body></html>\r\n";
 		} else {
 			other.status = ERROR;

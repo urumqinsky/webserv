@@ -70,7 +70,7 @@ void	makeQueue(ServerSocket *servSockets, int nPorts, ServerConfig &sConfig)
 	{
 		lIpPort *tmp = new lIpPort(servSockets[i].getIpPort());
 		EV_SET(&changeList[i], servSockets[i].getSocketFd(),
-				EVFILT_READ, EV_ADD | EV_CLEAR, 0, 0, static_cast<void*>(tmp));
+				EVFILT_READ, EV_ADD, 0, 0, static_cast<void*>(tmp));
 	}
 	if (kevent(kq, changeList, nPorts, NULL, 0, NULL) == -1)
 		return (printError("kevent() error"));

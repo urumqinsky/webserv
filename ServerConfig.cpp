@@ -2,8 +2,6 @@
 
 ServerConfig::ServerConfig(const char *str)
 {
-	if (str == nullptr)
-		throw std::exception();
 	parseConfigFile(str);
 	initListenIpPorts();
 }

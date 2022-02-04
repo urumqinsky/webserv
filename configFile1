@@ -1,7 +1,7 @@
 server   {
 	ip 127.0.0.1;
 	port 4444;
-	root /Users/aliya/21school/webserv;
+	root /Users/heula/webserv;
 
 	server_name localhost;
 	location / {
@@ -13,32 +13,39 @@ server   {
 		cgi_extension .bla;
 	}
 
-	location /nginx_test  {
-	index index.html
+	location /  {
+		index index.html
 		allow GET;
-	autoindex on;
-		root /Users/aliya/21school/webserv;
+		autoindex on;
+		root /Users/heula/webserv;
 		max_body_size 55;
-
+		cgi ./;
+		cgi_extension .cprog;
+	}
+	location /nginx_test  {
+		index index.html
+		allow GET;
+		autoindex on;
+		root /Users/heula/webserv;
+		max_body_size 55;
 	}
 		location /nginx_test/data  {
 		allow GET;
-	autoindex on;
-		root /Users/aliya/21school/webserv;
+		autoindex on;
+		root /Users/heula/webserv;
 		max_body_size 55;
 
 	}
 	location /configFile1  {
 		allow GET;
 		autoindex on;
-		root /Users/aliya/21school/webserv;
+		root /Users/heula/webserv;
 		max_body_size 55;
-
 	}
 
 }
 autoindex on;
 error_page 500 501 502 /errors/5.html;
 error_page 404 /errors/404.html;
-root /Users/aliya/21school/webserv;
+root /Users/heula/webserv
 max_body_size 100;

@@ -304,16 +304,42 @@ void Request::createResponce() {
 
 }
 
+// #define ENVNUMS 15
+
+// const std::string &Request::getServerName() const {
+// 	return this->serverName;
+// }
+
 void	Request::cgiHandler()
 {
+	// const char *env[ENVNUMS + 1];
+
+	// int i = 0;
+	// env[i++] = ("GATEWAY_INTERFACE=CGI/1.1");
+	// env[i++] = ("SERVER_NAME=" + var-hostname).c_str();
+	// env[i++] = ("SERVER_PORT=" + var-port).c_str();
+	// env[i++] = ("SERVER_PROTOCOL=" + var-http).c_str();
+	// env[i++] = ("SERVER_SOFTWARE=" + getServerName()).c_str();
+
+	// env[i++] = ("CONTENT_LENGTH=" + val-contentLength).c_str();
+	// env[i++] = ("CONTENT_TYPE="); // надо понять каким образом отличать тип данных
+	// env[i++] = ("PATH_INFO =");
+	// env[i++] = ("QUERY_STRING=" + getQuery()).c_std();
+	// env[i++] = ("REMOTE_ADDR=");
+	// env[i++] = ("REMOTE_HOST |");
+	// env[i++] = ("REQUEST_METHOD=" + val-getMethod()).c_str();
+	// env[i++] = ("REQUEST_LINE=" + val-getStarLine()).c_str();
+	// env[i++] = ("SCRIPT_NAME=" + val-getFileName()).c_str();
+	// env[ENVNUMS] = NULL;
 	int fd[2]; // fd[0] - read, fd[1] - write
-	if (pipe(fd) == -1)
+	if (pipe(fd) == -1) {
 		printError("pipe() error");
+	}
 	int pid = fork();
-	if (pid < 0)
+	if (pid < 0) {
 		printError("fork() error");
-	if (pid == 0)
-	{
+	}
+	if (pid == 0) {
 		dup2(fd[1], STDOUT_FILENO);
 		close(fd[0]);
 		close(fd[1]);

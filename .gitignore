@@ -1,4 +1,5 @@
 #IDE files
+.vscode
 .idea
 cmake-build-debug
 
@@ -34,6 +35,4 @@ cmake-build-debug
 *.exe
 *.out
 *.app
-
-.vscode/**/*
 webserv

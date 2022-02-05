@@ -60,6 +60,9 @@ public:
 	void cgiHandler();
 	
 	void makeRequestDefault();
+
+	// const std::string &getServerName() const;
+
 protected:
 	std::string method;
 	std::string path;

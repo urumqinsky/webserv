@@ -194,6 +194,8 @@ locCont	ServerConfig::parseLocation(std::ifstream &in, std::string &line,
 				locCont lc = parseLocation(in, line, splitted);
 				newLoc.locListL.push_back(lc);
 			}
+			else if (!(splitted[0].compare("authorization")))
+				newLoc.authorization = splitted[1];
 			else
 			{
 				std::cerr << "Invalid configuration file" << std::endl;

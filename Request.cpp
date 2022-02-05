@@ -143,14 +143,14 @@ void Request::parseFd(std::string req) {
 		}
 
 /////////////////////////////PRINT:
-	std::cout << this->method << "\t" << this->path << "\t" << this->http << std::endl;
-	std::map<std::string, std::string>::iterator it2 = this->headers.begin();
-	while (it2 != this->headers.end()) {
-		std::cout << it2->first << " - " << it2->second << std::endl;
-		++it2;
-	}
-	if (this->body != "")
-		std::cout << this->body << std::endl;
+	// std::cout << this->method << "\t" << this->path << "\t" << this->http << std::endl;
+	// std::map<std::string, std::string>::iterator it2 = this->headers.begin();
+	// while (it2 != this->headers.end()) {
+	// 	std::cout << it2->first << " - " << it2->second << std::endl;
+	// 	++it2;
+	// }
+	// if (this->body != "")
+	// 	std::cout << this->body << std::endl;
 /////////////////////////////PRINT_END
 	if (this->status == COMPLETED || this->status == ERROR) {
 		if((this->locConf = findLocation(*this)) == NULL) {
@@ -197,7 +197,7 @@ std::string searchIndexFile(Request &other) {
 	std::vector<std::string>::iterator it_end = other.locConf->genL.index.end();
 	std::string indexFile;
 	while (it_begin != it_end) {
-		indexFile = readFromFile(other.locConf->genL.root + "/" + (*it_begin));
+		indexFile = readFromFile(other.locConf->genL.root  + other.path + "/" + (*it_begin));
 		if (!indexFile.empty()) {
 			return indexFile;
 		} else {
@@ -271,6 +271,7 @@ void Request::createResponce() {
 	tmpLength << this->respBody.size();
 	std::string contLength = tmpLength.str();
 	this->responce = this->http  + " " +  createStatusLine(this->errorCode, this->allErrorCodes) + "\r\n";
+	// this->responce = "WWW-Authenticate: Basic realm=\"My Server\"\r\n";
 	this->responce += "Date: " + provaideDate() + "\r\n";
 	this->responce += "Server: " + this->serverName + "\r\n";
 	this->responce += "Content-Length:" +  contLength + "\r\n";
@@ -280,7 +281,7 @@ void Request::createResponce() {
 
 
 // PRINT RESPONCE
-	std::cout << "\r\n" << this->responce << std::endl;
+	// std::cout << "\r\n" << this->responce << std::endl;
 }
 
 void	Request::cgiHandler()

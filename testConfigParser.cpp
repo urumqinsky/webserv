@@ -45,6 +45,8 @@ void printLocation(locCont &loc)
 			std::cout << loc.methods[i] << " ";
 		std::cout << '\n';
 	}
+	if (loc.authorization == "on")
+		std::cout << "authorization " << loc.authorization << '\n';
 	printGeneral(loc.genL);
 	if (loc.locListL.size() != 0)
 	{

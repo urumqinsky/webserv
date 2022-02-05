@@ -53,13 +53,27 @@ void parseStartLine(Request &other) {
 		other.status = ERROR;
 		other.errorCode = 404;
 	} else {
-		char *tmp2 = new char[tmp.length()+1];
+		char *tmp2 = new char[tmp.length() + 1];
 		std::strcpy (tmp2, tmp.c_str());
-		other.method = std::strtok(tmp2, " ");
-		other.path = std::strtok(NULL, " ");
-		other.http = std::strtok(NULL, " ");
+		char *tmp3;
+		if ((tmp3 = std::strtok(tmp2, " ")) != NULL) {
+			other.method = tmp3;
+			if ((tmp3 = std::strtok(NULL, " ")) != NULL) {
+				other.path = tmp3;
+				if ((tmp3 = std::strtok(NULL, " ")) != NULL) {
+					other.http = tmp3; 
+				}
+			}
+		} else {
+			other.status = ERROR;
+			other.errorCode = 404;
+		}
+	if (other.method.empty() || other.path.empty() || other.http.empty()) {
+		other.status = ERROR;
+		other.errorCode = 404;
+	} 		
 		delete[] tmp2;
-		if (!(other.method == "GET" || other.method == "POST" || other.method == "DELETE")) {
+		if (!(other.method == "GET" || other.method == "POST" || other.method == "DELETE" || other.method == "HEAD")) {
 			other.status = ERROR;
 			other.errorCode = 501;
 		} else if (other.http.empty()) {
@@ -72,7 +86,6 @@ void parseStartLine(Request &other) {
 			other.buf.erase(0, tmp.length() + 2);
 			other.status = HEADERS;
 		}
-
 	}
 }
 
@@ -124,6 +137,7 @@ void Request::parseFd(std::string req) {
 
 	this->buf += req;
 	if (this->buf.find("\r\n") != std::string::npos) {
+	std::cout << buf << "\n";
 		switch (this->status) {
 			case START_LINE:
 				parseStartLine(*this);
@@ -141,7 +155,7 @@ void Request::parseFd(std::string req) {
 				break;
 
 		}
-
+	}
 /////////////////////////////PRINT:
 	std::cout << this->method << " " << this->path << " " << this->http << std::endl;
 	std::map<std::string, std::string>::iterator it2 = this->headers.begin();
@@ -181,7 +195,7 @@ void Request::parseFd(std::string req) {
 /////////////////////////////PRINT_RESPONCE
 	std::cout << this->responce << std::endl;
 	// sleep (10);
-	}
+
 }
 
 bool Request::checkIfCgi() {
@@ -271,7 +285,7 @@ void Request::createErrorBody() {
 		this->respBody = readFromFile(errorFile);
 		return ;
 	}
-	this->respBody = "<html><head><title></title></head><body><p>ERROR PAGE IS NOT FOUND</p></body></html>\r\n";
+	// this->respBody = "<html><head><title></title></head><body><p>ERROR PAGE IS NOT FOUND</p></body></html>\r\n";
 }
 
 

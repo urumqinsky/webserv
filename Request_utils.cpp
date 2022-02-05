@@ -54,7 +54,6 @@ locCont *findLocation(Request &other) {
             slash = 1;
         other.pathConfCheck.erase(slash);
     }
-    // locCont *tmp = NULL;
     return tmp;    
 }
 

@@ -9,12 +9,17 @@ class Request;
 
 #include <cstring>
 
+std::string provaideDate();
+std::string readFromFile(std::string file);
+std::string createStatusLine(int code, std::map<int, std::string> &m);
+
 enum Status {
 	START_LINE,
 	HEADERS,
 	BODY,
 	CHUNKED_BODY,
 	COMPLETED,
+	TO_WRITE,
 	ERROR
 };
 
@@ -30,12 +35,13 @@ public:
 	~Request();
 
 
-	Request(htCont *conf);
+	Request(htCont *conf, lIpPort *ip);
 	std::string const &getipPort();
 	void setipPort(int ipPort);
 	Status getStatus();
+	void setStatus(Status status);
 	std::string getResponce();
-
+	void setAllErrorCodes();
 	void parseFd(std::string req);
 	friend void parseStartLine(Request &other);
 	friend void parseHeader(Request &other);
@@ -43,31 +49,48 @@ public:
 	friend void	writeToClientSocket(int i, struct kevent *eventList);
 
 	void createResponce();
-	friend void checkRequest(Request &other);
+	void createBody();
+	void createErrorBody();
+	// friend void checkRequest(Request &other);
+	friend std::string searchIndexFile(Request &other);
+	friend void autoindexOn(Request &other);
+	friend locCont *findLocation(Request &other);
+	friend serCont *findServer(Request &other);
+	bool checkIfCgi();
+	void cgiHandler();
+	
+	void makeRequestDefault();
 protected:
 	std::string method;
 	std::string path;
+	std::string pathConfCheck;
 	std::string http;
 	std::map <std::string, std::string> headers;
 
+	htCont *conf;
+	locCont *locConf;
+	std::string ip;
+	int port;
 
 private:
 	Request(const Request &other);
 	Request	&operator=(const Request &other);
 
-	htCont *conf;
-
-	std::string ipPort; //?
 	std::string body;
 	std::string buf;
-	int errorStatus;
+	int errorCode;
 
 
 	Status	status;
 	chunkStatus	chunkStatus;
 
 	std::string responce;
+	std::string respBody;
+
+	std::string serverName;
 	int respCode;
+
+	std::map<int, std::string> allErrorCodes;
 
 };
 

@@ -1,18 +1,26 @@
+.PHONY: all clean fclean re
+
 NAME = webserv
 
-SRCS = main.cpp ServerSocket.cpp ServerConfig.cpp \
-	testConfigParser.cpp makeQueue.cpp Request.cpp
+CC = clang++
 
+# FLAGS = -g -fsanitize=address -Wall -Werror -Wextra -std=c++98
+FLAGS = -g -Wall -Werror -Wextra -std=c++98
+
+SRCS = main.cpp \
+	ServerSocket.cpp \
+	ServerConfig.cpp \
+	testConfigParser.cpp \
+	makeQueue.cpp \
+	Request.cpp \
+	Request_utils.cpp \
+	socketIO.cpp \
 
 OBJS = $(SRCS:.cpp=.o)
 
 DEPS = $(SRCS:.cpp=.d)
 
-FLAGS = -g -Wall -Werror -Wextra -std=c++98
-
-CC = clang++
-
-all: $(NAME)
+all: $(NAME) clean
 
 $(NAME): $(OBJS)
 	$(CC) $(FLAGS) $^ -o $@

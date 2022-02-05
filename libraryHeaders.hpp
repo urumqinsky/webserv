@@ -8,6 +8,9 @@
 # include <arpa/inet.h>
 # include <sys/event.h>
 # include <unistd.h>
+# include <dirent.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 # include <cstdlib>
 # include <cstring>
@@ -19,5 +22,7 @@
 # include <algorithm>
 # include <vector>
 # include <map>
+# include <sstream>
+# include <ctime>
 
 #endif

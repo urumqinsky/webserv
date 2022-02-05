@@ -2,9 +2,6 @@
 
 ServerConfig::ServerConfig(const char *str)
 {
-	std::memset(&httpCont, 0, sizeof(htCont));
-	if (str == nullptr)
-		throw std::exception();
 	parseConfigFile(str);
 	initListenIpPorts();
 }
@@ -25,6 +22,35 @@ const ServerConfig	&ServerConfig::operator=(const ServerConfig &other)
 		listenIpPorts = other.listenIpPorts;
 	}
 	return (*this);
+}
+
+void	ServerConfig::checkGeneralContent(genCont &to, genCont &from)
+{
+	if (to.autoindex == 0 && from.autoindex != 0)
+		to.autoindex = from.autoindex;
+	if (to.bodySizeMax == (size_t)0 && from.bodySizeMax != (size_t)0)
+		to.bodySizeMax = from.bodySizeMax;
+	if (to.error_page.size() == (size_t)0 && from.error_page.size() != (size_t)0)
+		to.error_page = from.error_page;
+	if (to.index.size() == (size_t)0 && from.index.size() != (size_t)0)
+		to.index = from.index;
+	if (to.root.size() == (size_t)0 && from.root.size() != (size_t)0)
+		to.root = from.root;
+}
+
+void	ServerConfig::inheritenceHandler()
+{
+	genCont genHTmp = httpCont.genH;
+
+	for (size_t i = 0; i < httpCont.serverList.size(); i++)
+	{
+		checkGeneralContent(httpCont.serverList[i].genS, genHTmp);
+		for (size_t j = 0; j < httpCont.serverList[i].locListS.size(); j++)
+		{
+			checkGeneralContent(httpCont.serverList[i].locListS[j].genL,
+									httpCont.serverList[i].genS);
+		}
+	}
 }
 
 void	ServerConfig::parseConfigFile(const char *filename)
@@ -53,6 +79,16 @@ void	ServerConfig::parseConfigFile(const char *filename)
 			}
 		}
 	}
+	inheritenceHandler();
+}
+
+void	ServerConfig::parseErrorPage(std::vector<std::string> splitted,
+										std::map<int, std::string> &err_map)
+{
+	std::string	path = splitted.back();
+
+	for (size_t i = 1; i < splitted.size() - 1; i++)
+		err_map[std::atoi(splitted[i].c_str())] = path;
 }
 
 bool	ServerConfig::parseGeneral(std::vector<std::string> splitted, genCont &gen)
@@ -70,7 +106,7 @@ bool	ServerConfig::parseGeneral(std::vector<std::string> splitted, genCont &gen)
 	}
 	else if (!(splitted[0].compare("autoindex")))
 	{
-		gen.autoindex = (!(splitted[1].compare("on"))) ? true : false;
+		gen.autoindex = (!(splitted[1].compare("on"))) ? 1 : 2;
 		return (true);
 	}
 	else if (!(splitted[0].compare("root")))
@@ -80,8 +116,7 @@ bool	ServerConfig::parseGeneral(std::vector<std::string> splitted, genCont &gen)
 	}
 	else if (!(splitted[0].compare("error_page")))
 	{
-		for (size_t i = 1; i < splitted.size(); i++)
-			gen.error_page.push_back(splitted[i]);
+		parseErrorPage(splitted, gen.error_page);
 		return (true);
 	}
 	return (false);
@@ -92,7 +127,6 @@ serCont	ServerConfig::parseServer(std::ifstream &in, std::string &line)
 	std::vector<std::string>	splitted;
 	serCont						newServ;
 
-	std::memset(&newServ, 0, sizeof(serCont));
 	if (in.is_open())
 	{
 		while (getline(in, line))
@@ -124,11 +158,11 @@ serCont	ServerConfig::parseServer(std::ifstream &in, std::string &line)
 	return (newServ);
 }
 
-locCont	ServerConfig::parseLocation(std::ifstream &in, std::string &line, std::vector<std::string> splitted)
+locCont	ServerConfig::parseLocation(std::ifstream &in, std::string &line,
+										std::vector<std::string> splitted)
 {
 	locCont	newLoc;
 
-	std::memset(&newLoc, 0, sizeof(locCont));
 	for (size_t i = 1; i < splitted.size() - 1; i++)
 		newLoc.locArgs.push_back(splitted[i]);
 	if (in.is_open())
@@ -175,7 +209,7 @@ std::vector<lIpPort>	ServerConfig::getListenIpPorts() const
 	return (listenIpPorts);
 }
 
-htCont						ServerConfig::getHttpCont() const
+htCont	ServerConfig::getHttpCont() const
 {
 	return (httpCont);
 }
@@ -200,7 +234,7 @@ std::vector<std::string>	ServerConfig::split(std::string s, std::string delimite
 	return res;
 }
 
-void						ServerConfig::initListenIpPorts()
+void	ServerConfig::initListenIpPorts()
 {
 	lIpPort		tmp;
 
@@ -223,7 +257,21 @@ lIpPort::lIpPort()
 	port = 0;
 }
 
-bool lIpPort::operator==(const lIpPort &other)
+bool	lIpPort::operator==(const lIpPort &other)
 {
 	return (this->ip == other.ip && this->port == other.port);
+}
+
+genCont::genCont()
+{
+	this->autoindex = 0;
+	this->bodySizeMax = 0;
+	this->root = "";
+}
+
+serCont::serCont()
+{
+	this->ip = "";
+	this->port = 0;
+	this->server_name = "";
 }

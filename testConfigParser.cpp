@@ -9,7 +9,7 @@ void printGeneral(genCont &gen)
 			std::cout << " " << gen.index[i];
 		std::cout << '\n';
 	}
-	if (gen.autoindex == true)
+	if (gen.autoindex != 0)
 		std::cout << "autoindex " << gen.autoindex << '\n';
 	if (gen.bodySizeMax != 0)
 		std::cout << "max_body_size " << gen.bodySizeMax << '\n';
@@ -17,10 +17,9 @@ void printGeneral(genCont &gen)
 		std::cout << "root " << gen.root << '\n';
 	if (gen.error_page.size() != 0)
 	{
-		std::cout << "error_page ";
-		for (size_t i = 0; i < gen.error_page.size(); i++)
-			std::cout << gen.error_page[i] << " ";
-		std::cout << '\n';
+		std::cout << "error_page:\n";
+		for (std::map<int, std::string>::iterator it = gen.error_page.begin(); it != gen.error_page.end(); ++it)
+			std::cout << it->first << " " << it->second << '\n';
 	}
 }
 

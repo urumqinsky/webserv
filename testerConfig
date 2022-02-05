@@ -1,0 +1,48 @@
+server   {
+	ip 127.0.0.1;
+	port 1234;
+	server_name localhost;
+
+	location / {
+		allow GET;
+		autoindex off;
+		index youpi.bad_extension;
+
+
+	}
+	location /test {
+		allow GET POST;
+		autoindex off;
+		index youpi.bad_extension;
+		alias ./Tester/YoupiBanane/hello;
+		cgi ./Tester/cgi_tester;
+        cgi_extension .bla;
+    	}
+	location /directory/ {
+		allow GET POST;
+		autoindex off;
+		index youpi.bad_extension;
+
+		cgi ./Tester/cgi_tester;
+        cgi_extension .bla;
+	}
+	location  /put_test {
+		allow PUT;
+		autoindex off;
+		index youpi.bad_extension;
+		alias ./Tester/YoupiBanane;
+		cgi ./Tester/cgi_tester;
+        cgi_extension .bla;
+	}
+	location /post_body {
+		allow POST;
+		max_body_size 100;
+		autoindex off;
+		index youpi.bad_extension;
+		alias ./Tester/YoupiBanane;
+		cgi ./Tester/cgi_tester;
+        cgi_extension .bla;
+	}
+}
+
+root /Users/heula/webserv/YoupiBanane;

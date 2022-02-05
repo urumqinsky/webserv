@@ -56,6 +56,7 @@ public:
 	friend void autoindexOn(Request &other);
 	friend locCont *findLocation(Request &other);
 	friend serCont *findServer(Request &other);
+	// void checkSetAlias(locCont *locConf);
 	bool checkIfCgi();
 	void cgiHandler();
 	
@@ -63,8 +64,9 @@ public:
 protected:
 	std::string method;
 	std::string path;
-	std::string pathConfCheck;
 	std::string http;
+	std::string aliasPath;
+	std::string pathConfCheck;
 	std::map <std::string, std::string> headers;
 
 	htCont *conf;

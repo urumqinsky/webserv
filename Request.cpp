@@ -163,15 +163,8 @@ void Request::parseFd(std::string req) {
 		std::cout << it2->first << ": " << it2->second << std::endl;
 		++it2;
 	}
-/////////////////////////////PRINT:
-	// std::cout << this->method << "\t" << this->path << "\t" << this->http << std::endl;
-	// std::map<std::string, std::string>::iterator it2 = this->headers.begin();
-	// while (it2 != this->headers.end()) {
-	// 	std::cout << it2->first << " - " << it2->second << std::endl;
-	// 	++it2;
-	// }
-	// if (this->body != "")
-	// 	std::cout << this->body << std::endl;
+	if (this->body != "")
+		std::cout << this->body << std::endl;
 /////////////////////////////PRINT_END
 	if (this->status == COMPLETED || this->status == ERROR) {
 		if((this->locConf = findLocation(*this)) == NULL) {
@@ -203,7 +196,7 @@ bool Request::checkIfCgi() {
 	if (!tmpCgiPath.compare(0, 2, "./")) {
 		tmpCgiPath.erase(0, 1);
 	}
-	if (this->path == tmpCgiPath) {
+	if (this->aliasPath== tmpCgiPath) {
 		std::string file = this->locConf->genL.root + "/" + this->locConf->cgiPath + this->locConf->cgiExtension;
 		std::ifstream fs;
 		fs.open(file);
@@ -220,7 +213,7 @@ std::string searchIndexFile(Request &other) {
 	std::vector<std::string>::iterator it_end = other.locConf->genL.index.end();
 	std::string indexFile;
 	while (it_begin != it_end) {
-		indexFile = readFromFile(other.locConf->genL.root + "/" + (*it_begin));
+		indexFile = readFromFile(other.locConf->genL.root + "/" + other.aliasPath + "/" + (*it_begin));
 		if (!indexFile.empty()) {
 			return indexFile;
 		} else {
@@ -242,7 +235,7 @@ void autoindexOn(Request &other) {
 		while ((file = readdir(dir)) != NULL) {
 			std::string tmp (file->d_name);
 			std::string slash = other.path[other.path.length() - 1] == '/' ? "" : "/";
-			std::string tmp_path = other.path + slash + tmp;
+			std::string tmp_path = other.aliasPath+ slash + tmp;
 			tmp = "<p><a href = \"" + tmp_path + "\">" + tmp + "</a></p>" ;
 			indexResponce += tmp;
 		}

@@ -15,6 +15,14 @@ serCont *findServer(Request &other) {
     return tmp;
 }
 
+std::string ifAlias(locCont *locConf, std::string path) {
+    if (locConf->alias.empty()) {
+        return path;
+    } else {
+        return locConf->alias;
+    }
+
+}
 
 locCont *findLocation(Request &other) {
     locCont *tmp = NULL;
@@ -32,7 +40,8 @@ locCont *findLocation(Request &other) {
             std::vector<locCont>::iterator it_end = ptr->locListS.end();
             while (it_begin != it_end) {
                 if ((*it_begin).locArgs[0] == other.pathConfCheck) {
-                    const char *rootPath = ((*it_begin).genL.root + other.path).c_str();
+                    other.aliasPath = ifAlias(&(*it_begin), other.path);
+                    const char *rootPath = ((*it_begin).genL.root + "/" + other.aliasPath).c_str();
                     stat(rootPath, &buf);
 
                     std::cout << rootPath << "<==========\n";

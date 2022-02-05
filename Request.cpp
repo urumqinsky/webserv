@@ -25,7 +25,7 @@ std::string Request::getResponce() { return this->responce; }
 
 void Request::makeRequestDefault() {
 	this->status = START_LINE;
-	// this->errorCode = 200;
+	this->errorCode = 200;
 	this->chunkStatus = NUM;
 	this->method.erase();
 	this->path.erase();
@@ -59,7 +59,7 @@ void parseStartLine(Request &other) {
 		other.path = std::strtok(NULL, " ");
 		other.http = std::strtok(NULL, " ");
 		delete[] tmp2;
-		if (!(other.method == "GET" || other.method == "POST" || other.method == "DELETE")) {
+		if (!(other.method == "GET" || other.method == "POST" || other.method == "DELETE" || other.method == "HEAD")) {
 			other.status = ERROR;
 			other.errorCode = 501;
 		} else if (other.http.empty()) {
@@ -112,8 +112,8 @@ void parseBody(Request &other) { // check body for terminal
 		other.buf.erase();
 	}
 	if (other.method == "POST" && other.body.empty()) {
-		other.status = ERROR;
-		other.errorCode = 400;
+		// other.status = ERROR;
+		other.errorCode = 204;
 	} else {
 		other.status = COMPLETED;
 	}
@@ -141,25 +141,25 @@ void Request::parseFd(std::string req) {
 				break;
 
 		}
-	}
+
 /////////////////////////////PRINT:
-	// std::cout << this->method << "\t" << this->path << "\t" << this->http << std::endl;
-	// std::map<std::string, std::string>::iterator it2 = this->headers.begin();
-	// while (it2 != this->headers.end()) {
-	// 	std::cout << it2->first << " - " << it2->second << std::endl;
-	// 	++it2;
-	// }
-	// if (this->body != "")
-	// 	std::cout << this->body << std::endl;
+	std::cout << this->method << "\t" << this->path << "\t" << this->http << std::endl;
+	std::map<std::string, std::string>::iterator it2 = this->headers.begin();
+	while (it2 != this->headers.end()) {
+		std::cout << it2->first << " - " << it2->second << std::endl;
+		++it2;
+	}
+	if (this->body != "")
+		std::cout << this->body << std::endl;
 /////////////////////////////PRINT_END
 	if (this->status == COMPLETED || this->status == ERROR) {
 		if((this->locConf = findLocation(*this)) == NULL) {
-			if (this->status != ERROR) {
-				this->status = ERROR;
-				this->errorCode = 500;
-			}
+			// if (this->status != ERROR) {
+			// 	this->status = ERROR;
+			// 	this->errorCode = 404;
+			// }
 			std::cout << "checkRequest error. Location not found" << "\n";
-		} else {
+		} else if (this->status != ERROR) {
 			if (!this->locConf->cgiPath.empty() && !this->locConf->cgiExtension.empty() && checkIfCgi()) {
 				cgiHandler();
 				return ;
@@ -172,6 +172,7 @@ void Request::parseFd(std::string req) {
 		createResponce();
 	}
 	// sleep (10);
+	}
 }
 
 bool Request::checkIfCgi() {
@@ -213,7 +214,7 @@ void autoindexOn(Request &other) {
 	std::ifstream fs;
 	std::string dirName = other.locConf->genL.root + other.path;
 
-	if ((dir = opendir(dirName.c_str())) != NULL) { 
+	if ((dir = opendir(dirName.c_str())) != NULL) {
 		//show files in path:
 		while ((file = readdir(dir)) != NULL) {
 			std::string tmp (file->d_name);
@@ -261,7 +262,7 @@ void Request::createErrorBody() {
 		this->respBody = readFromFile(errorFile);
 		return ;
 	}
-	this->respBody = "<html><head><title></title></head><body><p>ERROR PAGE IS NOT FOUND</p></body></html>\r\n";
+	// this->respBody = "<html><head><title></title></head><body><p>ERROR PAGE IS NOT FOUND</p></body></html>\r\n";
 }
 
 
@@ -279,7 +280,7 @@ void Request::createResponce() {
 
 
 // PRINT RESPONCE
-	// std::cout << "\r\n" << this->responce << std::endl;
+	std::cout << "\r\n" << this->responce << std::endl;
 }
 
 void	Request::cgiHandler()
@@ -296,7 +297,7 @@ void	Request::cgiHandler()
 		close(fd[0]);
 		close(fd[1]);
 		//find cgi file and put it with full path to execve
-		execve("/Users/heula/webserv/hello.cprog", 0, 0);
+		execve("/Users/ltulune/Desktop/webserv/hello.cprog", 0, 0);
 		//
 	}
 	close(fd[1]);

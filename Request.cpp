@@ -59,7 +59,7 @@ void parseStartLine(Request &other) {
 		other.path = std::strtok(NULL, " ");
 		other.http = std::strtok(NULL, " ");
 		delete[] tmp2;
-		if (!(other.method == "GET" || other.method == "POST" || other.method == "DELETE" || other.method == "HEAD")) {
+		if (!(other.method == "GET" || other.method == "POST" || other.method == "DELETE")) {
 			other.status = ERROR;
 			other.errorCode = 501;
 		} else if (other.http.empty()) {
@@ -149,8 +149,15 @@ void Request::parseFd(std::string req) {
 		std::cout << it2->first << ": " << it2->second << std::endl;
 		++it2;
 	}
-	if (this->body != "")
-		std::cout << this->body << std::endl;
+/////////////////////////////PRINT:
+	// std::cout << this->method << "\t" << this->path << "\t" << this->http << std::endl;
+	// std::map<std::string, std::string>::iterator it2 = this->headers.begin();
+	// while (it2 != this->headers.end()) {
+	// 	std::cout << it2->first << " - " << it2->second << std::endl;
+	// 	++it2;
+	// }
+	// if (this->body != "")
+	// 	std::cout << this->body << std::endl;
 /////////////////////////////PRINT_END
 	if (this->status == COMPLETED || this->status == ERROR) {
 		if((this->locConf = findLocation(*this)) == NULL) {
@@ -159,7 +166,7 @@ void Request::parseFd(std::string req) {
 				this->errorCode = 404;
 			}
 			std::cout << "checkRequest error. Location not found" << "\n";
-		} else if (this->status != ERROR) {
+		} else {
 			if (!this->locConf->cgiPath.empty() && !this->locConf->cgiExtension.empty() && checkIfCgi()) {
 				cgiHandler();
 				return ;
@@ -216,7 +223,7 @@ void autoindexOn(Request &other) {
 	std::ifstream fs;
 	std::string dirName = other.locConf->genL.root + other.path;
 
-	if ((dir = opendir(dirName.c_str())) != NULL) {
+	if ((dir = opendir(dirName.c_str())) != NULL) { 
 		//show files in path:
 		while ((file = readdir(dir)) != NULL) {
 			std::string tmp (file->d_name);
@@ -264,7 +271,7 @@ void Request::createErrorBody() {
 		this->respBody = readFromFile(errorFile);
 		return ;
 	}
-	// this->respBody = "<html><head><title></title></head><body><p>ERROR PAGE IS NOT FOUND</p></body></html>\r\n";
+	this->respBody = "<html><head><title></title></head><body><p>ERROR PAGE IS NOT FOUND</p></body></html>\r\n";
 }
 
 

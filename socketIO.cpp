@@ -34,12 +34,9 @@ void	deleteEvent(int kq, int i, struct kevent *eventList)
 
 void	readFromClientSocket(int kq, int i, struct kevent *eventList)
 {
-	// static int count = 1;
 	if (eventList[i].flags & EV_EOF)
 		deleteEvent(kq, i, eventList);
-	// std::cout << count++ << " socket: " << eventList[i].ident << "\n";
 	std::string msg = recv_msg(eventList[i].ident, (int)eventList[i].data);
-	// std::cout << msg << "\n";
 	s_udata *tmp = static_cast<s_udata*>(eventList[i].udata);
 	tmp->req->parseFd(msg);
 }

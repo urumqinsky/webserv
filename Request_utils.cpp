@@ -6,7 +6,7 @@ serCont *findServer(Request &other) {
     std::vector<serCont>::iterator it_end = other.conf->serverList.end();
     while(it_begin != it_end) {
     	if ((*it_begin).ip == other.ip && (*it_begin).port == other.port) {
-    		if ((*it_begin).server_name == (other.headers.find("HOST"))->second)
+    		if ((*it_begin).server_name == (other.headers.find("HOST"))->second) 
             return &(*it_begin);
         }
         ++it_begin;
@@ -54,7 +54,8 @@ locCont *findLocation(Request &other) {
             slash = 1;
         other.pathConfCheck.erase(slash);
     }
-    return tmp;
+    // locCont *tmp = NULL;
+    return tmp;    
 }
 
 std::string provaideDate() {

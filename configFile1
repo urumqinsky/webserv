@@ -1,7 +1,7 @@
 server   {
 	ip 127.0.0.1;
 	port 4444;
-	root /Users/ltulune/Desktop/webserv;
+	root /Users/heula/webserv;
 
 	server_name localhost;
 	location / {
@@ -17,7 +17,7 @@ server   {
 		index index.html
 		allow GET;
 		autoindex on;
-		root /Users/ltulune/Desktop/webserv;
+		root /Users/heula/webserv;
 		max_body_size 55;
 		cgi ./;
 		cgi_extension .cprog;
@@ -26,20 +26,20 @@ server   {
 		index index.html
 		allow GET;
 		autoindex on;
-		root /Users/ltulune/Desktop/webserv;
+		root /Users/heula/webserv;
 		max_body_size 55;
 	}
 		location /nginx_test/data  {
 		allow GET;
 		autoindex on;
-		root /Users/ltulune/Desktop/webserv;
+		root /Users/heula/webserv;
 		max_body_size 55;
 
 	}
 	location /configFile1  {
 		allow GET;
 		autoindex on;
-		root /Users/ltulune/Desktop/webserv;
+		root /Users/heula/webserv;
 		max_body_size 55;
 	}
 
@@ -47,5 +47,5 @@ server   {
 autoindex on;
 error_page 500 501 502 /errors/5.html;
 error_page 404 /errors/404.html;
-root /Users/ltulune/Desktop/webserv
+root /Users/heula/webserv
 max_body_size 100;

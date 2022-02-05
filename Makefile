@@ -9,8 +9,8 @@ OBJS = $(SRCS:.cpp=.o)
 
 DEPS = $(SRCS:.cpp=.d)
 
-# FLAGS = -g -fsanitize=address -Wall -Werror -Wextra -std=c++98
-FLAGS = -g -Wall -Werror -Wextra -std=c++98
+FLAGS = -g -fsanitize=address -Wall -Werror -Wextra -std=c++98
+# FLAGS = -g -Wall -Werror -Wextra -std=c++98
 
 CC = clang++
 
@@ -18,6 +18,7 @@ all: $(NAME)
 
 $(NAME): $(OBJS)
 	$(CC) $(FLAGS) $^ -o $@
+
 
 %.o: %.cpp Makefile
 	$(CC) $(FLAGS) -MMD -MP -c $< -o $@

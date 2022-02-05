@@ -6,7 +6,7 @@ serCont *findServer(Request &other) {
     std::vector<serCont>::iterator it_end = other.conf->serverList.end();
     while(it_begin != it_end) {
     	if ((*it_begin).ip == other.ip && (*it_begin).port == other.port) {
-    		if ((*it_begin).server_name == (other.headers.find("HOST"))->second) 
+    		if ((*it_begin).server_name == (other.headers.find("HOST"))->second)
             return &(*it_begin);
         }
         ++it_begin;
@@ -17,6 +17,12 @@ serCont *findServer(Request &other) {
 
 
 locCont *findLocation(Request &other) {
+    locCont *tmp = NULL;
+    DIR *dir;
+        // other.status = ERROR;
+        // other.errorCode = 404;
+        // return tmp;
+    // }
     other.pathConfCheck = other.path;
     serCont *ptr;
     while (other.pathConfCheck.length() > 0) {
@@ -24,7 +30,20 @@ locCont *findLocation(Request &other) {
             std::vector<locCont>::iterator it_begin = ptr->locListS.begin();
             std::vector<locCont>::iterator it_end = ptr->locListS.end();
             while (it_begin != it_end) {
-                if ((*it_begin).locArgs[0] == other.pathConfCheck && std::count ((*it_begin).methods.begin(), (*it_begin).methods.end(), other.method) > 0) {
+                if ((*it_begin).locArgs[0] == other.pathConfCheck) {
+                    std::string rootPath = (*it_begin).genL.root + other.path;
+                    std::cout << rootPath << "<==========\n";
+                    // if (!(access(rootPath.c_str(), F_OK) == 0 || (dir = opendir(rootPath.c_str())) = NULL)) {
+                    if ((dir = opendir(rootPath.c_str())) == NULL && access(rootPath.c_str(), F_OK) == -1) {
+                        other.status = ERROR;
+			        	other.errorCode = 404;
+                        return tmp;
+                    }
+                    if (std::count((*it_begin).methods.begin(), (*it_begin).methods.end(), other.method) == 0) {
+                        // std::cout << "METHOD" << other.method << "\n";
+                        other.status = ERROR;
+                        other.errorCode = 405;
+                    }
                     return &(*it_begin);
                 }
                 ++it_begin;
@@ -35,8 +54,7 @@ locCont *findLocation(Request &other) {
             slash = 1;
         other.pathConfCheck.erase(slash);
     }
-    locCont *tmp = NULL;
-    return tmp;    
+    return tmp;
 }
 
 std::string provaideDate() {

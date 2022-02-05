@@ -68,3 +68,7 @@ std::string readFromFile(std::string file) {
         return tmp;
 
 }
+
+// int ft_stoi(std::string) {
+    
+// }

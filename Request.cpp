@@ -106,14 +106,35 @@ void parseHeader(Request &other) {
 	}
 }
 
+// void parseChunkedBody(Request &other)
+// {
+// 	std::string tmp;
+// 	char *tmp2; 
+// 	while (other.buf.find("\r\n") != std::string::npos) {
+// 		if (other.chunkStatus == NUM) {
+// 			tmp.assign(other.buf, other.buf.find("\r\n"));
+// 			tmp2 = tmp.c_str();
+// 			other.chunkSize = ().
+// 		}
+// 	}
+// }
+
+std::string Request::getHeader(std::string token) {
+	std::string second;
+	if (this->headers.find(token) != this->headers.end())
+		second = this->headers.find(token)->second;
+	return second; 
+}
+
 void parseBody(Request &other) { // check body for terminal
+	// if (!other.getHeader("TRANSFER-ENCODING").empty())
+	// 	parseChunkedBody(other);
 	if (other.buf.find("\r\n\r\n") != std::string::npos) {
 		other.body.assign(other.buf, 0, other.buf.length() - 4);
 		other.buf.erase();
-	}
-	if (other.method == "POST" && other.body.empty()) {
+	} if (other.method == "POST" && other.body.empty()) {
 		other.status = ERROR;
-		other.errorCode = 400;
+		other.errorCode = 204;
 	} else {
 		other.status = COMPLETED;
 	}
@@ -143,14 +164,14 @@ void Request::parseFd(std::string req) {
 		}
 	}
 /////////////////////////////PRINT:
-	// std::cout << this->method << "\t" << this->path << "\t" << this->http << std::endl;
-	// std::map<std::string, std::string>::iterator it2 = this->headers.begin();
-	// while (it2 != this->headers.end()) {
-	// 	std::cout << it2->first << " - " << it2->second << std::endl;
-	// 	++it2;
-	// }
-	// if (this->body != "")
-	// 	std::cout << this->body << std::endl;
+	std::cout << this->method << "\t" << this->path << "\t" << this->http << std::endl;
+	std::map<std::string, std::string>::iterator it2 = this->headers.begin();
+	while (it2 != this->headers.end()) {
+		std::cout << it2->first << " - " << it2->second << std::endl;
+		++it2;
+	}
+	if (this->body != "")
+		std::cout << this->body << std::endl;
 /////////////////////////////PRINT_END
 	if (this->status == COMPLETED || this->status == ERROR) {
 		if((this->locConf = findLocation(*this)) == NULL) {
@@ -171,6 +192,8 @@ void Request::parseFd(std::string req) {
 			createErrorBody();
 		createResponce();
 	}
+	// PRINT RESPONCE
+	std::cout << "\r\n" << this->responce << std::endl;
 	// sleep (10);
 }
 
@@ -272,14 +295,14 @@ void Request::createResponce() {
 	this->responce = this->http  + " " +  createStatusLine(this->errorCode, this->allErrorCodes) + "\r\n";
 	this->responce += "Date: " + provaideDate() + "\r\n";
 	this->responce += "Server: " + this->serverName + "\r\n";
-	this->responce += "Content-Length:" +  contLength + "\r\n";
+	// if (this->headers.find("TRANSFER-ENCODING") != this->headers.end())
+		this->responce += "Content-Length:" +  contLength + "\r\n";
 	this->responce += "Connection: Keep-Alive\r\n\r\n";
 	this->responce += this->respBody;
 	this->status = COMPLETED;
 
 
-// PRINT RESPONCE
-	// std::cout << "\r\n" << this->responce << std::endl;
+
 }
 
 void	Request::cgiHandler()

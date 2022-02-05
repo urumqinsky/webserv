@@ -12,7 +12,6 @@ class Request;
 std::string provaideDate();
 std::string readFromFile(std::string file);
 std::string createStatusLine(int code, std::map<int, std::string> &m);
-// int ft_stoi(std::string);
 
 enum Status {
 	START_LINE,
@@ -42,15 +41,11 @@ public:
 	Status getStatus();
 	void setStatus(Status status);
 	std::string getResponce();
-	std::string getHeader(std::string token);
-
 	void setAllErrorCodes();
-
 	void parseFd(std::string req);
 	friend void parseStartLine(Request &other);
 	friend void parseHeader(Request &other);
 	friend void parseBody(Request &other);
-	friend void parseChunkedBody(Request &other);
 	friend void	writeToClientSocket(int i, struct kevent *eventList);
 
 	void createResponce();
@@ -88,7 +83,6 @@ private:
 
 	Status	status;
 	chunkStatus	chunkStatus;
-	int chunkSize;
 
 	std::string responce;
 	std::string respBody;

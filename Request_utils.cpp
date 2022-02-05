@@ -18,7 +18,7 @@ serCont *findServer(Request &other) {
 
 locCont *findLocation(Request &other) {
     locCont *tmp = NULL;
-    DIR *dir;
+    // DIR *dir;
         // other.status = ERROR;
         // other.errorCode = 404;
         // return tmp;
@@ -34,11 +34,11 @@ locCont *findLocation(Request &other) {
                     std::string rootPath = (*it_begin).genL.root + other.path;
                     std::cout << rootPath << "<==========\n";
                     // if (!(access(rootPath.c_str(), F_OK) == 0 || (dir = opendir(rootPath.c_str())) = NULL)) {
-                    if ((dir = opendir(rootPath.c_str())) == NULL && access(rootPath.c_str(), F_OK) == -1) {
-                        other.status = ERROR;
-			        	other.errorCode = 404;
-                        return tmp;
-                    }
+                    // if ((dir = opendir(rootPath.c_str())) == NULL && access(rootPath.c_str(), F_OK) == -1) {
+                    //     other.status = ERROR;
+			        // 	other.errorCode = 404;
+                    //     return tmp;
+                    // }
                     if (std::count((*it_begin).methods.begin(), (*it_begin).methods.end(), other.method) == 0) {
                         // std::cout << "METHOD" << other.method << "\n";
                         other.status = ERROR;
@@ -86,7 +86,3 @@ std::string readFromFile(std::string file) {
         return tmp;
 
 }
-
-// int ft_stoi(std::string) {
-    
-// }

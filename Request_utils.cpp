@@ -18,6 +18,7 @@ serCont *findServer(Request &other) {
 
 locCont *findLocation(Request &other) {
     locCont *tmp = NULL;
+    struct stat buf;
     // DIR *dir;
         // other.status = ERROR;
         // other.errorCode = 404;
@@ -31,8 +32,18 @@ locCont *findLocation(Request &other) {
             std::vector<locCont>::iterator it_end = ptr->locListS.end();
             while (it_begin != it_end) {
                 if ((*it_begin).locArgs[0] == other.pathConfCheck) {
-                    std::string rootPath = (*it_begin).genL.root + other.path;
+                    const char *rootPath = ((*it_begin).genL.root + other.path).c_str();
+                    stat(rootPath, &buf);
+
                     std::cout << rootPath << "<==========\n";
+                    std::cout << S_ISREG(buf.st_mode) << "\n";
+                    std::cout << S_ISDIR(buf.st_mode) << "\n";
+                    if (!S_ISREG(buf.st_mode) && !S_ISDIR(buf.st_mode)) {
+                        std::cout << "<+++++++++++++" << "\n";
+                        other.status = ERROR;
+                        other.errorCode = 404;
+                        return tmp; 
+                    }
                     // if (!(access(rootPath.c_str(), F_OK) == 0 || (dir = opendir(rootPath.c_str())) = NULL)) {
                     // if ((dir = opendir(rootPath.c_str())) == NULL && access(rootPath.c_str(), F_OK) == -1) {
                     //     other.status = ERROR;

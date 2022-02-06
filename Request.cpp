@@ -310,3 +310,9 @@ void	Request::cgiHandler()
 	this->responce = std::string(buf);
 	this->status = COMPLETED;
 }
+
+void Request::setClientIpPort(const lIpPort &other)
+{
+	clientIpPort = other;
+	std::cout << "set func : " << clientIpPort.ip << ":" << clientIpPort.port << std::endl;
+}

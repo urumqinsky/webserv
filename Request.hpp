@@ -12,6 +12,8 @@ class Request;
 std::string provaideDate();
 std::string readFromFile(std::string file);
 std::string createStatusLine(int code, std::map<int, std::string> &m);
+std::string ifAlias(locCont *locConf, std::string path);
+// std::string clearFromSlash(std::string str);
 
 enum Status {
 	START_LINE,
@@ -65,7 +67,8 @@ protected:
 	std::string method;
 	std::string path;
 	std::string http;
-	std::string aliasPath;
+	std::string aliasPath; //w/o root
+	std::string fullPath; //with root
 	std::string pathConfCheck;
 	std::map <std::string, std::string> headers;
 

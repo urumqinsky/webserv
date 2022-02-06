@@ -168,10 +168,10 @@ void Request::parseFd(std::string req) {
 /////////////////////////////PRINT_END
 	if (this->status == COMPLETED || this->status == ERROR) {
 		if((this->locConf = findLocation(*this)) == NULL) {
-			if (this->status != ERROR) {
-				this->status = ERROR;
-				this->errorCode = 404;
-			}
+			// if (this->status != ERROR) {
+			// 	this->status = ERROR;
+			// 	this->errorCode = 404;
+			// }
 			std::cout << "checkRequest error. Location not found" << "\n";
 		} else {
 			if (!this->locConf->cgiPath.empty() && !this->locConf->cgiExtension.empty() && checkIfCgi()) {
@@ -213,7 +213,8 @@ std::string searchIndexFile(Request &other) {
 	std::vector<std::string>::iterator it_end = other.locConf->genL.index.end();
 	std::string indexFile;
 	while (it_begin != it_end) {
-		indexFile = readFromFile(other.locConf->genL.root + "/" + other.aliasPath + "/" + (*it_begin));
+		// indexFile = readFromFile(other.locConf->genL.root + "/" + other.aliasPath + "/" + (*it_begin));
+		indexFile = readFromFile(other.fullPath + "/" + (*it_begin));
 		if (!indexFile.empty()) {
 			return indexFile;
 		} else {
@@ -234,23 +235,26 @@ void autoindexOn(Request &other) {
 		//show files in path:
 		while ((file = readdir(dir)) != NULL) {
 			std::string tmp (file->d_name);
-			std::string slash = other.path[other.path.length() - 1] == '/' ? "" : "/";
-			std::string tmp_path = other.aliasPath+ slash + tmp;
+			// std::string slash = other.path[other.path.length() - 1] == '/' ? "" : "/";
+			// std::string tmp_path = other.aliasPath +  slash + tmp;
+			std::string slash = other.aliasPath[other.aliasPath.length() - 1] == '/' ? "" : "/";
+			std::string tmp_path = other.aliasPath +  slash + tmp;
 			tmp = "<p><a href = \"" + tmp_path + "\">" + tmp + "</a></p>" ;
 			indexResponce += tmp;
 		}
+		// other.respBody += "<html><head><title></title></head><body>" + indexResponce + "</body></html>\r\n";
 		other.respBody += "<html><head><title></title></head><body>" + indexResponce + "</body></html>\r\n";
 		closedir(dir);
 	} else {
-		std::string tmp = readFromFile(dirName);
-		if (!tmp.empty()) {
-			// show file:
-			other.respBody += "<html><head><title></title></head><body><p>" + tmp + "</p></body></html>\r\n";
-		} else {
+		// std::string tmp = readFromFile(dirName);
+		// if (!tmp.empty()) {
+		// 	// show file:
+		// 	other.respBody += "<html><head><title></title></head><body><p>" + tmp + "</p></body></html>\r\n";
+		// } else {
 			other.status = ERROR;
 			other.errorCode = 404;
 			std::cout << "autoindex ERROR" << "\n";
-		}
+		// }
 	}
 
 }
@@ -258,7 +262,18 @@ void autoindexOn(Request &other) {
 
 void Request::createBody() {
 	std::string indexFile;
-	if (!this->locConf->genL.index.empty()) {
+	// std::string tmp = readFromFile(this->locConf->genL.root + "/" + this->aliasPath);
+	std::string tmp = readFromFile(this->fullPath);
+	
+	// std::string tmp = "<html><head><title></title></head><body><p><img src=\"" + this->fullPath + "\" alt=\"lalal\"></p></body></html>\r\n";
+	
+	std::cout << this->fullPath << "<xxxxxxxxxxxxx" << "\n";
+	if (!tmp.empty()) {
+		// show file:
+		this->respBody += "<html><head><title></title></head><body><p>" + tmp + "</p></body></html>\r\n";
+		this->respBody = tmp;
+		return ;
+	} else if (!this->locConf->genL.index.empty()) {
 		indexFile = searchIndexFile(*this);
 	}
 	if (!indexFile.empty()){
@@ -290,7 +305,12 @@ void Request::createResponce() {
 	this->responce += "Date: " + provaideDate() + "\r\n";
 	this->responce += "Server: " + this->serverName + "\r\n";
 	this->responce += "Content-Length:" +  contLength + "\r\n";
+	
+	// this->responce += "Content-Type: image/jpeg\r\n";
+	
 	this->responce += "Connection: Keep-Alive\r\n\r\n";
+	
+
 	this->responce += this->respBody;
 	this->status = COMPLETED;
 

@@ -8,7 +8,6 @@ server   {
 		allow GET;
 		autoindex on;
 		index index.html;
-		alias ./testers/YoupiBanane;
 		cgi ./helloo;
 		cgi_extension .cprog;
 	}

@@ -223,6 +223,7 @@ void autoindexOn(Request &other) {
 			tmp = "<p><a href = \"" + tmp_path + "\">" + tmp + "</a></p>" ;
 			indexResponce += tmp;
 		}
+
 		other.respBody += "<html><head><title></title></head><body>" + indexResponce + "</body></html>\r\n";
 		closedir(dir);
 	} else {

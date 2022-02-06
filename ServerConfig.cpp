@@ -36,15 +36,17 @@ void	ServerConfig::checkGeneralContent(genCont &to, genCont &from)
 		to.index = from.index;
 	if (to.root.size() == (size_t)0 && from.root.size() != (size_t)0)
 		to.root = from.root;
+	if (to.index.size() == (size_t)0)
+		to.index.push_back("index.html");
+	if (from.index.size() == (size_t)0)
+		from.index.push_back("index.html");
 }
 
 void	ServerConfig::inheritenceHandler()
 {
-	genCont genHTmp = httpCont.genH;
-
 	for (size_t i = 0; i < httpCont.serverList.size(); i++)
 	{
-		checkGeneralContent(httpCont.serverList[i].genS, genHTmp);
+		checkGeneralContent(httpCont.serverList[i].genS, httpCont.genH);
 		for (size_t j = 0; j < httpCont.serverList[i].locListS.size(); j++)
 		{
 			checkGeneralContent(httpCont.serverList[i].locListS[j].genL,

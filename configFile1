@@ -6,14 +6,14 @@ server   {
 	location / {
 		allow GET;
 		autoindex on;
-		index index.html;
+		index index1.html;
 		alias ./testers/YoupiBanane;
 		cgi ./helloo;
 		cgi_extension .cprog;
 	}
 
 	location /  {
-		index index.html
+		index index2.html;
 		allow GET;
 		autoindex on;
 		root /Users/ltulune/Desktop/webserv;
@@ -47,3 +47,4 @@ error_page 500 501 502 /errors/5.html;
 error_page 404 /errors/404.html;
 root /Users/ltulune/Desktop/webserv
 max_body_size 100;
+

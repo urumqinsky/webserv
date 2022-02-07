@@ -1,20 +1,19 @@
 server   {
 	ip 127.0.0.1;
 	port 4444;
-	root /Users/rlando/Desktop/musor_a_ne_proect;
 
 	server_name localhost;
 	location / {
 		allow GET;
 		autoindex on;
-		index index.html;
+		index index1.html;
 		alias ./testers/YoupiBanane;
 		cgi ./helloo;
 		cgi_extension .cprog;
 	}
 
 	location /  {
-		index index.html
+		index index2.html;
 		allow GET;
 		autoindex on;
 		root /Users/rlando/Desktop/musor_a_ne_proect;
@@ -23,11 +22,10 @@ server   {
 		cgi_extension .cprog;
 	}
 	location /nginx_test  {
-		index index.html
+		index login.html;
 		allow GET;
-		autoindex on;
-		root /Users/rlando/Desktop/musor_a_ne_proect;
 		max_body_size 55;
+		authorization on;
 	}
 		location /nginx_test/data  {
 		allow GET;
@@ -44,8 +42,8 @@ server   {
 	}
 
 }
-autoindex on;
 error_page 500 501 502 /errors/5.html;
 error_page 404 /errors/404.html;
 root /Users/rlando/Desktop/musor_a_ne_proect
 max_body_size 100;
+

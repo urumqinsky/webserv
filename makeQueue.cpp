@@ -30,6 +30,10 @@ void	acceptNewClient(int kq, int i, struct kevent *eventList, htCont *conf)
 	tmp->socketStatus = 0;
 	tmp->ipPort = new lIpPort(*(static_cast<lIpPort*>(eventList[i].udata)));
 	tmp->req = new Request(conf, tmp->ipPort);
+	lIpPort client;
+	client.ip = std::string(inet_ntoa(addr.sin_addr));
+	client.port = addr.sin_port;
+	tmp->req->setClientIpPort(client);
 	EV_SET(&evSet[0], newEventFd, EVFILT_READ, EV_ADD, 0, 0, static_cast<void*>(tmp));
 	EV_SET(&evSet[1], newEventFd, EVFILT_WRITE, EV_ADD, 0, 0, static_cast<void*>(tmp));
 	if (kevent(kq, evSet, 2, NULL, 0, NULL) == -1)

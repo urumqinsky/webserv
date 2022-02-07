@@ -158,13 +158,6 @@ void Request::parseFd(std::string req) {
 		}
 	}
 /////////////////////////////PRINT:
-	std::cout << this->method << " " << this->path << " " << this->http << std::endl;
-	std::map<std::string, std::string>::iterator it2 = this->headers.begin();
-	while (it2 != this->headers.end()) {
-		std::cout << it2->first << ": " << it2->second << std::endl;
-		++it2;
-	}
-/////////////////////////////PRINT:
 	// std::cout << this->method << "\t" << this->path << "\t" << this->http << std::endl;
 	// std::map<std::string, std::string>::iterator it2 = this->headers.begin();
 	// while (it2 != this->headers.end()) {
@@ -224,7 +217,7 @@ std::string searchIndexFile(Request &other) {
 	std::vector<std::string>::iterator it_end = other.locConf->genL.index.end();
 	std::string indexFile;
 	while (it_begin != it_end) {
-		indexFile = readFromFile(other.locConf->genL.root + "/" + (*it_begin));
+		indexFile = readFromFile(other.locConf->genL.root  + other.path + "/" + (*it_begin));
 		if (!indexFile.empty()) {
 			return indexFile;
 		} else {
@@ -250,6 +243,7 @@ void autoindexOn(Request &other) {
 			tmp = "<p><a href = \"" + tmp_path + "\">" + tmp + "</a></p>" ;
 			indexResponce += tmp;
 		}
+
 		other.respBody += "<html><head><title></title></head><body>" + indexResponce + "</body></html>\r\n";
 		closedir(dir);
 	} else {
@@ -298,6 +292,7 @@ void Request::createResponce() {
 	tmpLength << this->respBody.size();
 	std::string contLength = tmpLength.str();
 	this->responce = this->http  + " " +  createStatusLine(this->errorCode, this->allErrorCodes) + "\r\n";
+	// this->responce = "WWW-Authenticate: Basic realm=\"My Server\"\r\n";
 	this->responce += "Date: " + provaideDate() + "\r\n";
 	this->responce += "Server: " + this->serverName + "\r\n";
 	this->responce += "Content-Length:" +  contLength + "\r\n";
@@ -361,4 +356,10 @@ void	Request::cgiHandler()
 	close(fd[0]);
 	this->responce = std::string(buf);
 	this->status = COMPLETED;
+}
+
+void Request::setClientIpPort(const lIpPort &other)
+{
+	clientIpPort = other;
+	std::cout << "set func : " << clientIpPort.ip << ":" << clientIpPort.port << std::endl;
 }

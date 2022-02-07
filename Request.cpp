@@ -230,7 +230,8 @@ void autoindexOn(Request &other) {
 		std::string tmp = readFromFile(dirName);
 		if (!tmp.empty()) {
 			// show file:
-			other.respBody += "<html><head><title></title></head><body><p>" + tmp + "</p></body></html>\r\n";
+			other.respBody = tmp;
+			// other.respBody += "<html><head><title></title></head><body><p>" + tmp + "</p></body></html>\r\n";
 		} else {
 			other.status = ERROR;
 			other.errorCode = 404;
@@ -282,7 +283,7 @@ void Request::createResponce() {
 
 
 // PRINT RESPONCE
-	// std::cout << "\r\n" << this->responce << std::endl;
+	std::cout << "\r\n" << this->responce << std::endl;
 }
 
 void	Request::cgiHandler()

@@ -22,11 +22,9 @@ server   {
 		cgi_extension .cprog;
 	}
 	location /nginx_test  {
-		index login.html;
 		allow GET;
-
 		max_body_size 55;
-		authorization on;
+		autoindex on;
 	}
 		location /nginx_test/data  {
 		allow GET;

@@ -52,6 +52,8 @@ void parseStartLine(Request &other) {
 	if (tmp.empty()) {
 		other.status = ERROR;
 		other.errorCode = 404;
+		other.buf.erase(0, 2);
+		return ;
 	} else {
 		char *tmp2 = new char[tmp.length() + 1];
 		std::strcpy (tmp2, tmp.c_str());
@@ -93,7 +95,7 @@ void parseHeader(Request &other) {
 	std::string first;
 	std::string second;
 	if (other.buf.find("\r\n\r\n") != std::string::npos || other.buf == "\r\n")
-		other.status = BODY;
+		other.status = HEAD_END;
 	while (other.buf.find("\r\n") != std::string::npos && other.buf.find("\r\n") != 0) {
 		first = other.buf.substr(0, other.buf.find(":"));
 		size_t size = first.length();
@@ -103,7 +105,7 @@ void parseHeader(Request &other) {
 		other.headers.insert(std::pair<std::string, std::string>(first, second));
 		other.buf.erase(0, first.length() + second.length() + 2 + 1);
 	}
-	if (other.status == BODY) {
+	if (other.status == HEAD_END) {
 		other.buf.erase(0, 2);
 		std::map<std::string, std::string>::iterator it = other.headers.begin();
 		while (it != other.headers.end()) {
@@ -116,6 +118,48 @@ void parseHeader(Request &other) {
 		}
 		std::string tmp = other.headers.find("HOST")->second;
 		other.headers.find("HOST")->second = tmp.substr(0, tmp.find(":"));
+		if (getHeader("TRANSFER-ENCODING", other.headers) == "chunked") {
+			other.status = CHUNKED_BODY;
+			return ;
+		}
+		std::string contLength = getHeader("CONTENT-LENGHT", other.headers);
+		// } else if (atoi(getHeader("CONTENT-LENGHT", other.headers).c_str()) > 0) {
+		if (!contLength.empty() && atoi(contLength.c_str()) > 0) {
+			other.status = BODY;
+		} else 
+			other.status = COMPLETED;
+
+	}
+}
+
+
+void parseChunkedBody(Request &other) {
+	size_t lineEnd;
+	std::string str;
+	while (other.status == CHUNKED_BODY && (lineEnd = other.buf.find("\r\n")) != std::string::npos) {
+		if (other.chunkStatus == END && other.buf == "\r\n") {
+			other.status = COMPLETED;
+			other.buf.erase(0, 2);
+			std::cout << "body " << other.body << '\n';
+		}
+		// lineEnd = other.buf.find("\r\n");
+		str = other.buf.substr(0, lineEnd);
+		other.buf.erase(0, lineEnd + 2);
+		if (other.chunkStatus == NUM) {
+			if (str.empty()) {
+				other.buf.erase(0, 2);
+				return;
+			}
+			other.chunkSize = atol(str.c_str());
+			if (other.chunkSize == 0)
+				other.chunkStatus = END;
+			else
+				other.chunkStatus = TEXT;
+		}
+		else if (other.chunkStatus == TEXT) {
+			other.body += str.assign(str, 0, other.chunkSize);
+			other.chunkStatus = NUM;
+		}
 	}
 }
 
@@ -134,25 +178,29 @@ void parseBody(Request &other) { // check body for terminal
 
 
 void Request::parseFd(std::string req) {
-
 	this->buf += req;
-	if (this->buf.find("\r\n") != std::string::npos) {
-	std::cout << buf << "\n";
+	// if (this->buf.find("\r\n") != std::string::npos) {
+	// std::cout << buf << "\n";
+	while (this->buf.find("\r\n") != std::string::npos) {
 		switch (this->status) {
 			case START_LINE:
 				parseStartLine(*this);
-				if (this->status == START_LINE || this->status == ERROR)
+				// if (this->status == START_LINE || this->status == ERROR)
 					break;
 			case HEADERS:
 				parseHeader(*this);
-				if (this->status == HEADERS)
+				// if (this->status == HEADERS)
 					break;
 			case BODY:
 				parseBody(*this);
-				if (this->status == BODY)
+				// if (this->status == BODY)
+					break;
+			case CHUNKED_BODY:
+				parseChunkedBody(*this);
+				// if (this->status == CHUNKED_BODY)
 					break;
 			default:
-				break;
+				return;
 
 		}
 	}
@@ -260,7 +308,7 @@ void autoindexOn(Request &other) {
 }
 
 
-void Request::createBody() {
+void Request::createBody() { // devide into methods GET HEAD POST PUT DELETE
 	std::string indexFile;
 	// std::string tmp = readFromFile(this->locConf->genL.root + "/" + this->aliasPath);
 	std::string tmp = readFromFile(this->fullPath);

@@ -41,14 +41,9 @@ locCont *findLocation(Request &other) {
             while (it_begin != it_end) {
                 if ((*it_begin).locArgs[0] == other.pathConfCheck) {
                     if (std::count((*it_begin).methods.begin(), (*it_begin).methods.end(), other.method) == 0) {
-                        // std::cout << "METHOD " << other.method << "\n";
                         other.status = ERROR;
                         other.errorCode = 405;
                     }
-                    // other.aliasPath = ifAlias(&(*it_begin), other.path) + appndx;
-                    // other.fullPath = (*it_begin).genL.root + "/" + other.aliasPath;
-                    // std::string rP = (*it_begin).genL.root + "/" + other.aliasPath;
-                    // const char *rootPath = rP.c_str();
                     other.aliasPath = ifAlias(&(*it_begin), other.pathConfCheck) + appndx;
                     other.fullPath = (*it_begin).genL.root + "/" + other.aliasPath;
                     const char *rootPath = other.fullPath .c_str();
@@ -106,4 +101,12 @@ std::string readFromFile(std::string file) {
         }
         return tmp;
 
+}
+
+std::string getHeader(std::string token, std::map<std::string, std::string> &headers) {
+	std::string result;
+	if (headers.find(token) != headers.end()) {
+		result = headers.find(token)->second;
+	}
+	return result;
 }

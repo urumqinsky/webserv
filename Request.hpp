@@ -75,6 +75,8 @@ protected:
 	std::string ip;
 	int port;
 
+	std::string requestLine;
+
 private:
 	Request(const Request &other);
 	Request	&operator=(const Request &other);

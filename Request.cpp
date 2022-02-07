@@ -48,13 +48,14 @@ void Request::setAllErrorCodes() {
 }
 
 void parseStartLine(Request &other) {
-	std::string tmp = other.buf.substr(0, other.buf.find("\r\n"));
-	if (tmp.empty()) {
+	other.requestLine = other.buf.substr(0, other.buf.find("\r\n"));
+	
+	if (other.requestLine.empty()) {
 		other.status = ERROR;
 		other.errorCode = 404;
 	} else {
-		char *tmp2 = new char[tmp.length() + 1];
-		std::strcpy (tmp2, tmp.c_str());
+		char *tmp2 = new char[other.requestLine.length() + 1];
+		std::strcpy (tmp2, other.requestLine.c_str());
 		char *tmp3;
 		if ((tmp3 = std::strtok(tmp2, " ")) != NULL) {
 			other.method = tmp3;
@@ -83,7 +84,7 @@ void parseStartLine(Request &other) {
 			other.status = ERROR;
 			other.errorCode = 505;
 		} else {
-			other.buf.erase(0, tmp.length() + 2);
+			other.buf.erase(0, other.requestLine.length() + 2);
 			other.status = HEADERS;
 		}
 	}
@@ -181,10 +182,12 @@ void Request::parseFd(std::string req) {
 			}
 			std::cout << "checkRequest error. Location not found" << "\n";
 		} else {
+
 			if (!this->locConf->cgiPath.empty() && !this->locConf->cgiExtension.empty() && checkIfCgi()) {
 				cgiHandler();
 				return ;
 			} else {
+				std::cout << "booody\n";
 				createBody();
 			}
 		}
@@ -203,6 +206,7 @@ bool Request::checkIfCgi() {
 	if (!tmpCgiPath.compare(0, 2, "./")) {
 		tmpCgiPath.erase(0, 1);
 	}
+	std::cout << path << " === " << tmpCgiPath << std::endl;
 	if (this->path == tmpCgiPath) {
 		std::string file = this->locConf->genL.root + "/" + this->locConf->cgiPath + this->locConf->cgiExtension;
 		std::ifstream fs;
@@ -300,41 +304,44 @@ void Request::createResponce() {
 	this->responce += "Connection: Keep-Alive\r\n\r\n";
 	this->responce += this->respBody;
 	this->status = COMPLETED;
-
-
 }
 
-// #define ENVNUMS 15
+#define ENVNUMS 15
 
-// const std::string &Request::getServerName() const {
-// 	return this->serverName;
-// }
+std::string getQueryString(const std::string &path) {
+	std::cout << path << std::endl;
+	return path;
+}
 
 void	Request::cgiHandler()
 {
-	// const char *env[ENVNUMS + 1];
+	std::cout << "cgi handler\n";
+	const char *env[ENVNUMS + headers.size() + 1];
+	int i = 0;
 
-	// int i = 0;
-	// env[i++] = ("GATEWAY_INTERFACE=CGI/1.1");
-	// env[i++] = ("SERVER_NAME=" + var-hostname).c_str();
-	// env[i++] = ("SERVER_PORT=" + var-port).c_str();
-	// env[i++] = ("SERVER_PROTOCOL=" + var-http).c_str();
-	// env[i++] = ("SERVER_SOFTWARE=" + getServerName()).c_str();
-
-	// env[i++] = ("CONTENT_LENGTH=" + val-contentLength).c_str();
-	// env[i++] = ("CONTENT_TYPE="); // надо понять каким образом отличать тип данных
-	// env[i++] = ("PATH_INFO =");
-	// env[i++] = ("QUERY_STRING=" + getQuery()).c_std();
+	// server env
+	env[i++] = ("GATEWAY_INTERFACE=CGI/1.1");
+	env[i++] = ("SERVER_NAME=" + headers.find("HOST")->second).c_str();
+	// env[i++] = ("SERVER_PORT=" + std::string(port)).c_str();
+	env[i++] = ("SERVER_PROTOCOL=" + http).c_str();
+	env[i++] = ("SERVER_SOFTWARE=" + serverName).c_str();
+	// request 
+	// env[i++] = ("CONTENT_LENGTH=" + headers.find("CONTENTLENGTH")->second).c_str();
+	// env[i++] = ("CONTENT_TYPE=" + headers.find("CONTENT_TYPE")->second);
+	env[i++] = ("PATH_INFO=");
+	env[i++] = ("QUERY_STRING=" + getQueryString(this->path)).c_str();
 	// env[i++] = ("REMOTE_ADDR=");
 	// env[i++] = ("REMOTE_HOST |");
-	// env[i++] = ("REQUEST_METHOD=" + val-getMethod()).c_str();
-	// env[i++] = ("REQUEST_LINE=" + val-getStarLine()).c_str();
-	// env[i++] = ("SCRIPT_NAME=" + val-getFileName()).c_str();
-	// env[ENVNUMS] = NULL;
+	env[i++] = ("REQUEST_METHOD=" + this->method).c_str();
+	env[i++] = ("REQUEST_LINE=" + this->requestLine).c_str();
+	// env[i++] = ("SCRIPT_NAME=" + getFileName()).c_str();
+	env[ENVNUMS] = NULL;
+
 	int fd[2]; // fd[0] - read, fd[1] - write
 	if (pipe(fd) == -1) {
 		printError("pipe() error");
 	}
+
 	int pid = fork();
 	if (pid < 0) {
 		printError("fork() error");
@@ -344,7 +351,7 @@ void	Request::cgiHandler()
 		close(fd[0]);
 		close(fd[1]);
 		//find cgi file and put it with full path to execve
-		execve("/Users/heula/webserv/hello.cprog", 0, 0);
+		execve("/Users/rlando/Desktop/scripts/cgi.bla", 0, 0);
 		//
 	}
 	close(fd[1]);

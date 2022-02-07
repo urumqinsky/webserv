@@ -12,6 +12,8 @@ class Request;
 std::string provaideDate();
 std::string readFromFile(std::string file);
 std::string createStatusLine(int code, std::map<int, std::string> &m);
+std::string ifAlias(locCont *locConf, std::string path);
+// std::string clearFromSlash(std::string str);
 
 enum Status {
 	START_LINE,
@@ -56,6 +58,7 @@ public:
 	friend void autoindexOn(Request &other);
 	friend locCont *findLocation(Request &other);
 	friend serCont *findServer(Request &other);
+	// void checkSetAlias(locCont *locConf);
 	bool checkIfCgi();
 	void cgiHandler();
 	void setClientIpPort(const lIpPort &other);
@@ -66,8 +69,10 @@ public:
 protected:
 	std::string method;
 	std::string path;
-	std::string pathConfCheck;
 	std::string http;
+	std::string aliasPath; //w/o root
+	std::string fullPath; //with root
+	std::string pathConfCheck;
 	std::map <std::string, std::string> headers;
 
 	htCont *conf;
@@ -77,6 +82,8 @@ protected:
 	lIpPort clientIpPort;
 
 	std::string requestLine;
+	std::string getContentLenght();
+	std::string getQueryString();
 
 private:
 	Request(const Request &other);

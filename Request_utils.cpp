@@ -15,24 +15,43 @@ serCont *findServer(Request &other) {
     return tmp;
 }
 
+std::string ifAlias(locCont *locConf, std::string path) {
+    if (locConf->alias.empty()) {
+        return path;
+    } else {
+        return locConf->alias;
+    }
+
+}
+
+// std::string clearFromSlash(std::string str) {
+
+// }
 
 locCont *findLocation(Request &other) {
     locCont *tmp = NULL;
     struct stat buf;
-    // DIR *dir;
-        // other.status = ERROR;
-        // other.errorCode = 404;
-        // return tmp;
-    // }
     other.pathConfCheck = other.path;
     serCont *ptr;
+    std::string appndx = "";
     while (other.pathConfCheck.length() > 0) {
         if ((ptr = findServer(other)) != NULL) {
             std::vector<locCont>::iterator it_begin = ptr->locListS.begin();
             std::vector<locCont>::iterator it_end = ptr->locListS.end();
             while (it_begin != it_end) {
                 if ((*it_begin).locArgs[0] == other.pathConfCheck) {
-                    const char *rootPath = ((*it_begin).genL.root + other.path).c_str();
+                    if (std::count((*it_begin).methods.begin(), (*it_begin).methods.end(), other.method) == 0) {
+                        // std::cout << "METHOD " << other.method << "\n";
+                        other.status = ERROR;
+                        other.errorCode = 405;
+                    }
+                    // other.aliasPath = ifAlias(&(*it_begin), other.path) + appndx;
+                    // other.fullPath = (*it_begin).genL.root + "/" + other.aliasPath;
+                    // std::string rP = (*it_begin).genL.root + "/" + other.aliasPath;
+                    // const char *rootPath = rP.c_str();
+                    other.aliasPath = ifAlias(&(*it_begin), other.pathConfCheck) + appndx;
+                    other.fullPath = (*it_begin).genL.root + "/" + other.aliasPath;
+                    const char *rootPath = other.fullPath .c_str();
                     stat(rootPath, &buf);
 
                     std::cout << rootPath << "<==========\n";
@@ -44,17 +63,6 @@ locCont *findLocation(Request &other) {
                         other.errorCode = 404;
                         return tmp; 
                     }
-                    // if (!(access(rootPath.c_str(), F_OK) == 0 || (dir = opendir(rootPath.c_str())) = NULL)) {
-                    // if ((dir = opendir(rootPath.c_str())) == NULL && access(rootPath.c_str(), F_OK) == -1) {
-                    //     other.status = ERROR;
-			        // 	other.errorCode = 404;
-                    //     return tmp;
-                    // }
-                    if (std::count((*it_begin).methods.begin(), (*it_begin).methods.end(), other.method) == 0) {
-                        // std::cout << "METHOD" << other.method << "\n";
-                        other.status = ERROR;
-                        other.errorCode = 405;
-                    }
                     return &(*it_begin);
                 }
                 ++it_begin;
@@ -63,6 +71,8 @@ locCont *findLocation(Request &other) {
         int slash = other.pathConfCheck.rfind("/");
         if (slash == (int)other.pathConfCheck.find("/") && other.pathConfCheck.length() > 1)
             slash = 1;
+        if (slash != 1)
+            appndx = other.pathConfCheck.substr(slash) + appndx;
         other.pathConfCheck.erase(slash);
     }
     return tmp;    

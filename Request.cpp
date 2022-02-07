@@ -98,8 +98,12 @@ void parseHeader(Request &other) {
 	while (other.buf.find("\r\n") != std::string::npos && other.buf.find("\r\n") != 0) {
 		first = other.buf.substr(0, other.buf.find(":"));
 		size_t size = first.length();
-		for (size_t i = 0; i < size; ++i)
+		for (size_t i = 0; i < size; ++i) {
+			if (first[i] == '-') {
+				first[i] = '_';
+			}
 			first[i] = (unsigned char)std::toupper(first[i]);
+		}
 		second = other.buf.substr(other.buf.find(":") + 1, other.buf.find("\r\n") - first.length() - 1);
 		other.headers.insert(std::pair<std::string, std::string>(first, second));
 		other.buf.erase(0, first.length() + second.length() + 2 + 1);
@@ -169,14 +173,15 @@ void Request::parseFd(std::string req) {
 /////////////////////////////PRINT_END
 	if (this->status == COMPLETED || this->status == ERROR) {
 		if((this->locConf = findLocation(*this)) == NULL) {
-			if (this->status != ERROR) {
-				this->status = ERROR;
-				this->errorCode = 404;
-			}
+			// if (this->status != ERROR) {
+			// 	this->status = ERROR;
+			// 	this->errorCode = 404;
+			// }
 			std::cout << "checkRequest error. Location not found" << "\n";
 		} else {
-
-			if (!this->locConf->cgiPath.empty() && !this->locConf->cgiExtension.empty() && checkIfCgi()) {
+			int res = checkIfCgi();
+			std::cout << res << std::endl;
+			if (!this->locConf->cgiPath.empty() && !this->locConf->cgiExtension.empty() && res) {
 				cgiHandler();
 				return ;
 			} else {
@@ -195,21 +200,22 @@ void Request::parseFd(std::string req) {
 }
 
 bool Request::checkIfCgi() {
-	std::string tmpCgiPath = this->locConf->cgiPath + this->locConf->cgiExtension;
-	if (!tmpCgiPath.compare(0, 2, "./")) {
-		tmpCgiPath.erase(0, 1);
-	}
-	std::cout << path << " === " << tmpCgiPath << std::endl;
-	if (this->path == tmpCgiPath) {
-		std::string file = this->locConf->genL.root + "/" + this->locConf->cgiPath + this->locConf->cgiExtension;
-		std::ifstream fs;
-		fs.open(file);
-		if (fs.is_open()) {
-			fs.close();
-			return 1;
-		}
-	}
-	return 0;
+	// std::string tmpCgiPath = this->locConf->cgiPath + this->locConf->cgiExtension;
+	// if (!tmpCgiPath.compare(0, 2, "./")) {
+	// 	tmpCgiPath.erase(0, 1);
+	// }
+	// std::cout << this->path << " " << tmpCgiPath << std::endl;
+	// if (this->aliasPath == tmpCgiPath) {
+	// 	std::string file = this->locConf->genL.root + "/" + this->locConf->cgiPath + this->locConf->cgiExtension;
+	// 	std::ifstream fs;
+	// 	fs.open(file);
+	// 	if (fs.is_open()) {
+	// 		fs.close();
+	// 		return 1;
+	// 	}
+	// }
+	// return 0;
+	return 1;
 }
 
 std::string searchIndexFile(Request &other) {
@@ -217,7 +223,8 @@ std::string searchIndexFile(Request &other) {
 	std::vector<std::string>::iterator it_end = other.locConf->genL.index.end();
 	std::string indexFile;
 	while (it_begin != it_end) {
-		indexFile = readFromFile(other.locConf->genL.root  + other.path + "/" + (*it_begin));
+		// indexFile = readFromFile(other.locConf->genL.root + "/" + other.aliasPath + "/" + (*it_begin));
+		indexFile = readFromFile(other.fullPath + "/" + (*it_begin));
 		if (!indexFile.empty()) {
 			return indexFile;
 		} else {
@@ -238,24 +245,26 @@ void autoindexOn(Request &other) {
 		//show files in path:
 		while ((file = readdir(dir)) != NULL) {
 			std::string tmp (file->d_name);
-			std::string slash = other.path[other.path.length() - 1] == '/' ? "" : "/";
-			std::string tmp_path = other.path + slash + tmp;
+			// std::string slash = other.path[other.path.length() - 1] == '/' ? "" : "/";
+			// std::string tmp_path = other.aliasPath +  slash + tmp;
+			std::string slash = other.aliasPath[other.aliasPath.length() - 1] == '/' ? "" : "/";
+			std::string tmp_path = other.aliasPath +  slash + tmp;
 			tmp = "<p><a href = \"" + tmp_path + "\">" + tmp + "</a></p>" ;
 			indexResponce += tmp;
 		}
-
+		// other.respBody += "<html><head><title></title></head><body>" + indexResponce + "</body></html>\r\n";
 		other.respBody += "<html><head><title></title></head><body>" + indexResponce + "</body></html>\r\n";
 		closedir(dir);
 	} else {
-		std::string tmp = readFromFile(dirName);
-		if (!tmp.empty()) {
-			// show file:
-			other.respBody += "<html><head><title></title></head><body><p>" + tmp + "</p></body></html>\r\n";
-		} else {
+		// std::string tmp = readFromFile(dirName);
+		// if (!tmp.empty()) {
+		// 	// show file:
+		// 	other.respBody += "<html><head><title></title></head><body><p>" + tmp + "</p></body></html>\r\n";
+		// } else {
 			other.status = ERROR;
 			other.errorCode = 404;
 			std::cout << "autoindex ERROR" << "\n";
-		}
+		// }
 	}
 
 }
@@ -263,7 +272,18 @@ void autoindexOn(Request &other) {
 
 void Request::createBody() {
 	std::string indexFile;
-	if (!this->locConf->genL.index.empty()) {
+	// std::string tmp = readFromFile(this->locConf->genL.root + "/" + this->aliasPath);
+	std::string tmp = readFromFile(this->fullPath);
+	
+	// std::string tmp = "<html><head><title></title></head><body><p><img src=\"" + this->fullPath + "\" alt=\"lalal\"></p></body></html>\r\n";
+	
+	std::cout << this->fullPath << "<xxxxxxxxxxxxx" << "\n";
+	if (!tmp.empty()) {
+		// show file:
+		this->respBody += "<html><head><title></title></head><body><p>" + tmp + "</p></body></html>\r\n";
+		this->respBody = tmp;
+		return ;
+	} else if (!this->locConf->genL.index.empty()) {
 		indexFile = searchIndexFile(*this);
 	}
 	if (!indexFile.empty()){
@@ -296,65 +316,13 @@ void Request::createResponce() {
 	this->responce += "Date: " + provaideDate() + "\r\n";
 	this->responce += "Server: " + this->serverName + "\r\n";
 	this->responce += "Content-Length:" +  contLength + "\r\n";
+	
+	// this->responce += "Content-Type: image/jpeg\r\n";
+	
 	this->responce += "Connection: Keep-Alive\r\n\r\n";
+	
+
 	this->responce += this->respBody;
-	this->status = COMPLETED;
-}
-
-#define ENVNUMS 15
-
-std::string getQueryString(const std::string &path) {
-	std::cout << path << std::endl;
-	return path;
-}
-
-void	Request::cgiHandler()
-{
-	std::cout << "cgi handler\n";
-	const char *env[ENVNUMS + headers.size() + 1];
-	int i = 0;
-
-	// server env
-	env[i++] = ("GATEWAY_INTERFACE=CGI/1.1");
-	env[i++] = ("SERVER_NAME=" + headers.find("HOST")->second).c_str();
-	// env[i++] = ("SERVER_PORT=" + std::string(port)).c_str();
-	env[i++] = ("SERVER_PROTOCOL=" + http).c_str();
-	env[i++] = ("SERVER_SOFTWARE=" + serverName).c_str();
-	// request 
-	// env[i++] = ("CONTENT_LENGTH=" + headers.find("CONTENTLENGTH")->second).c_str();
-	// env[i++] = ("CONTENT_TYPE=" + headers.find("CONTENT_TYPE")->second);
-	env[i++] = ("PATH_INFO=");
-	env[i++] = ("QUERY_STRING=" + getQueryString(this->path)).c_str();
-	// env[i++] = ("REMOTE_ADDR=");
-	// env[i++] = ("REMOTE_HOST |");
-	env[i++] = ("REQUEST_METHOD=" + this->method).c_str();
-	env[i++] = ("REQUEST_LINE=" + this->requestLine).c_str();
-	// env[i++] = ("SCRIPT_NAME=" + getFileName()).c_str();
-	env[ENVNUMS] = NULL;
-
-	int fd[2]; // fd[0] - read, fd[1] - write
-	if (pipe(fd) == -1) {
-		printError("pipe() error");
-	}
-
-	int pid = fork();
-	if (pid < 0) {
-		printError("fork() error");
-	}
-	if (pid == 0) {
-		dup2(fd[1], STDOUT_FILENO);
-		close(fd[0]);
-		close(fd[1]);
-		//find cgi file and put it with full path to execve
-		execve("/Users/rlando/Desktop/scripts/cgi.bla", 0, 0);
-		//
-	}
-	close(fd[1]);
-	char buf[200];
-	memset(buf, 0, 200);
-	read(fd[0], buf, 200);
-	close(fd[0]);
-	this->responce = std::string(buf);
 	this->status = COMPLETED;
 }
 

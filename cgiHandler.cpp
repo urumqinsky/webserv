@@ -23,17 +23,27 @@ std::string Request::getQueryString() {
 
 // GET CONTENT_LENGTH
 std::string Request::getContentLenght() {
-	if (this->headers.find("CONTENT_LENGTH")->second.empty()) {
-		return integerToString(this->body.length());
-	} else {
+	std::map<std::string, std::string>::iterator it = this->headers.find("CONTENT_LENGTH");
+	if (it != this->headers.end()) {
 		return this->headers.find("CONTENT_LENGTH")->second;
+	} else {
+		return integerToString(this->body.length());
+	}
+}
+
+std::string Request::getContentType() {
+	std::map<std::string, std::string>::iterator it = this->headers.find("CONTENT_TYPE");
+	if (it != this->headers.end()) {
+		return this->headers.find("CONTENT_TYPE")->second;
+	} else {
+		return "";
 	}
 }
 
 // TMP FUNCTION FOR PRINTING HEADERS
 void printHeaders(std::map <std::string, std::string> &headers) {
-	std::map <std::string, std::string>::iterator it = headers.begin();
-	std::map <std::string, std::string>::iterator it2 = headers.end();
+	std::map<std::string, std::string>::iterator it = headers.begin();
+	std::map<std::string, std::string>::iterator it2 = headers.end();
 	for (; it != it2; ++it) {
 		std::cout << it->first << " == " << it->second << std::endl;
 	}
@@ -44,40 +54,60 @@ void printHeaders(std::map <std::string, std::string> &headers) {
 	}
 }
 
+// GET SCRIPT NAME
+std::string Request::getScriptName() {
+	return this->locConf->cgiPath + this->locConf->cgiExtension;
+}
+
+std::string Request::getClientIp() {
+	return this->clientIpPort.ip;
+}
+
+std::string Request::getClientPort() {
+	return integerToString(this->clientIpPort.port);
+}
+	
+
 // MAIN FUNCTION FOR HANDLING CGI
 void	Request::cgiHandler()
 {
-	const char *env[ENVNUMS + headers.size() + 1];
+	std::cout << ENVNUMS + headers.size() + 1 << std::endl;
+	// const char *env[ENVNUMS + headers.size()];
+	char **env = new char *[ENVNUMS + headers.size()];
 	int i(0);
 
 	std::cout << this->locConf->cgiPath + this->locConf->cgiExtension << std::endl;
-	printHeaders(headers);
+	// printHeaders(headers);
 	
-	// server env
-	env[i++] = ("GATEWAY_INTERFACE=CGI/1.1");
-	env[i++] = ("SERVER_NAME=" + headers.find("HOST")->second).c_str();
-	env[i++] = ("SERVER_PORT=" + integerToString(port)).c_str();
-	env[i++] = ("SERVER_PROTOCOL=" + http).c_str();
-	env[i++] = ("SERVER_SOFTWARE=" + serverName).c_str();
-	// request 
-	env[i++] = ("CONTENT_LENGTH=" + getContentLenght()).c_str();
-	env[i++] = ("CONTENT_TYPE=" + headers.find("CONTENT_TYPE")->second).c_str();
-	env[i++] = ("PATH_INFO=");
-	env[i++] = ("QUERY_STRING=" + getQueryString()).c_str();
-	// env[i++] = ("REMOTE_ADDR=");
-	// env[i++] = ("REMOTE_HOST |");
-	env[i++] = ("REQUEST_METHOD=" + this->method).c_str();
-	env[i++] = ("REQUEST_LINE=" + this->requestLine).c_str();
-	// env[i++] = ("SCRIPT_NAME=" + getFileName()).c_str();
-	std::map <std::string, std::string>::iterator it2 = headers.end();
-	for (std::map <std::string, std::string>::iterator it = headers.begin(); it != it2; ++it) {
-		env[i++] = ("HTTP_" + it->first + "=" + it->second).c_str();
+	// SERVER ENV
+	env[i++] = strdup("GATEWAY_INTERFACE=CGI/1.1");
+	env[i++] = strdup(("SERVER_NAME=" + getHeader("HOST", this->headers)).c_str());
+	env[i++] = strdup(("SERVER_PORT=" + integerToString(port)).c_str());
+	env[i++] = strdup(("SERVER_PROTOCOL=" + http).c_str());
+	env[i++] = strdup(("SERVER_SOFTWARE=" + serverName).c_str());
+
+	// REQUEST ENV 
+	env[i++] = strdup(("CONTENT_LENGTH=" + getContentLenght()).c_str());
+	env[i++] = strdup(("CONTENT_TYPE=" + getContentType()).c_str());
+	env[i++] = strdup("PATH_INFO=");
+	env[i++] = strdup(("QUERY_STRING=" + getQueryString()).c_str());
+	env[i++] = strdup(("REMOTE_ADDR=" + getClientIp()).c_str());
+	env[i++] = strdup(("REMOTE_HOST=" + getClientPort()).c_str());
+	env[i++] = strdup(("REQUEST_METHOD=" + this->method).c_str());
+	env[i++] = strdup(("REQUEST_LINE=" + this->requestLine).c_str());
+	env[i++] = strdup(("SCRIPT_NAME=" + getScriptName()).c_str());
+
+	// SERVER ENV
+	std::map<std::string, std::string>::iterator it2 = headers.end();
+	for (std::map<std::string, std::string>::iterator it = headers.begin(); it != it2; ++it) {
+		env[i++] = strdup(("HTTP_" + it->first + "=" + it->second).c_str());
 	}
 	env[ENVNUMS + headers.size()] = NULL;
 
 	for (unsigned int t = 0; t < (ENVNUMS + headers.size()); t++) {
-		std::cout << env[t] << std::endl;
+		std::cout << env[t] << " " << std::endl;
 	}
+
 	int fd[2]; // fd[0] - read, fd[1] - write
 	if (pipe(fd) == -1) {
 		printError("pipe() error");
@@ -93,7 +123,7 @@ void	Request::cgiHandler()
 		close(fd[1]);
 		std::cout << "hello from child" << std::endl;
 		//find cgi file and put it with full path to execve
-		execve("/Users/rlando/Desktop/cgi.bla", 0, 0);
+		execve("/Users/rlando/Desktop/cgi.bla", 0, env);
 		//
 	}
 	close(fd[1]);

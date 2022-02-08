@@ -364,9 +364,8 @@ void Request::createErrorBody() {
 
 
 void Request::createResponce() {
-	std::stringstream tmpLength;
-	tmpLength << this->respBody.size();
-	std::string contLength = tmpLength.str();
+	std::string contLength = integerToString(this->respBody.size());
+	
 	this->responce = this->http  + " " +  createStatusLine(this->errorCode, this->allErrorCodes) + "\r\n";
 	// this->responce = "WWW-Authenticate: Basic realm=\"My Server\"\r\n";
 	this->responce += "Date: " + provaideDate() + "\r\n";

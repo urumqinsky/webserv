@@ -14,6 +14,8 @@ std::string readFromFile(std::string file);
 std::string createStatusLine(int code, std::map<int, std::string> &m);
 std::string ifAlias(locCont *locConf, std::string path);
 std::string getHeader(std::string token, std::map<std::string, std::string> &headers);
+template<typename T>
+std::string integerToString(T number);
 // std::string clearFromSlash(std::string str);
 
 enum Status {
@@ -90,7 +92,11 @@ protected:
 
 	std::string requestLine;
 	std::string getContentLenght();
+	std::string getContentType();
 	std::string getQueryString();
+	std::string getScriptName();
+	std::string getClientIp();
+	std::string getClientPort();
 
 private:
 	Request(const Request &other);

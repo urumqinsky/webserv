@@ -65,6 +65,8 @@ public:
 	// void checkSetAlias(locCont *locConf);
 	bool checkIfCgi();
 	void cgiHandler();
+
+	void putMethod ();
 	
 	void makeRequestDefault();
 protected:

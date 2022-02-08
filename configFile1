@@ -5,7 +5,7 @@ server   {
 
 	server_name localhost;
 	location / {
-		allow GET;
+		allow GET PUT q;
 		autoindex on;
 		index index.html;
 		cgi ./helloo;

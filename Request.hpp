@@ -96,7 +96,7 @@ private:
 
 	Status	status;
 	chunkStatus	chunkStatus;
-	size_t chunkSize;
+	size_t tmpBodySize;
 
 	std::string responce;
 	std::string respBody;

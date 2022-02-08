@@ -19,14 +19,26 @@ std::string ifAlias(locCont *locConf, std::string path) {
     if (locConf->alias.empty()) {
         return path;
     } else {
+        // std::string tmp = locConf->alias;
+        // if (!tmp.compare(0, 2, "./")) {
+        //     tmp.erase(0, 1);
+        // }
+        // return tmp;
         return locConf->alias;
     }
-
 }
 
-// std::string clearFromSlash(std::string str) {
+std::string clearFromSlash(std::string str) {
+    while(str.find("/") == 0) {
+        str.erase(0,1);
+    }
 
-// }
+    // std::cout << str << "\n" << str.rfind("/") << " ======= " << str.size() << "    " << str.length() << std::endl;
+    while (!str.empty() && str.rfind("/") == str.length() - 1) {
+        str.pop_back();
+    }
+    return str;
+}
 
 locCont *findLocation(Request &other) {
     locCont *tmp = NULL;
@@ -39,7 +51,7 @@ locCont *findLocation(Request &other) {
             std::vector<locCont>::iterator it_begin = ptr->locListS.begin();
             std::vector<locCont>::iterator it_end = ptr->locListS.end();
             while (it_begin != it_end) {
-                if ((*it_begin).locArgs[0] == other.pathConfCheck) {
+                if (clearFromSlash((*it_begin).locArgs[0]) == clearFromSlash(other.pathConfCheck)) {
                     if (std::count((*it_begin).methods.begin(), (*it_begin).methods.end(), other.method) == 0) {
                         other.status = ERROR;
                         other.errorCode = 405;
@@ -49,12 +61,12 @@ locCont *findLocation(Request &other) {
                     const char *rootPath = other.fullPath .c_str();
                     stat(rootPath, &buf);
 
-                    std::cout << rootPath << "<==========\n";
-                    std::cout << S_ISREG(buf.st_mode) << "\n";
-                    std::cout << S_ISDIR(buf.st_mode) << "\n";
+                    // std::cout << rootPath << "<==========\n";
+                    // std::cout << S_ISREG(buf.st_mode) << "\n";
+                    // std::cout << S_ISDIR(buf.st_mode) << "\n";
                     if (!S_ISREG(buf.st_mode) && !S_ISDIR(buf.st_mode) && other.method != "PUT") {
                     // if (!S_ISREG(buf.st_mode) && !S_ISDIR(buf.st_mode)) {
-                        std::cout << "<+++++++++++++" << "\n";
+                        // std::cout << "<+++++++++++++" << "\n";
                         other.status = ERROR;
                         other.errorCode = 404;
                         return tmp; 
@@ -69,11 +81,11 @@ locCont *findLocation(Request &other) {
         // if (slash != 1)
         //     appndx = other.pathConfCheck.substr(slash) + appndx;
         // other.pathConfCheck.erase(slash);
-        int slash = other.pathConfCheck.rfind("/");
         // if (other.pathConfCheck.length() > 1)
         //     slash = 1;
         // if (slash != 1)
-            appndx = other.pathConfCheck.substr(slash) + appndx;
+        int slash = other.pathConfCheck.rfind("/");
+        appndx = other.pathConfCheck.substr(slash) + appndx;
         other.pathConfCheck.erase(slash);
         if (appndx == other.path)
             other.pathConfCheck = "/";

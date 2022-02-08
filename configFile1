@@ -5,22 +5,14 @@ server   {
 
 	server_name localhost;
 	location / {
-		allow GET PUT q;
+		allow GET PUT;
 		autoindex on;
 		index index.html;
+		alias ./errors
 		cgi ./helloo;
 		cgi_extension .cprog;
 	}
 
-	location /  {
-		index index2.html;
-		allow GET;
-		autoindex on;
-		root /Users/heula/webserv;
-		max_body_size 55;
-		cgi ./;
-		cgi_extension .cprog;
-	}
 	location /nginx_test  {
 		allow GET;
 		autoindex on;

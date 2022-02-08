@@ -131,7 +131,10 @@ void parseHeader(Request &other) {
 		}
 		std::string contLength = getHeader("CONTENT_LENGTH", other.headers);
 		// } else if (atoi(getHeader("CONTENT-LENGHT", other.headers).c_str()) > 0) {
-		if (!contLength.empty() && atoi(contLength.c_str()) > 0) {
+		size_t bodySize = atoi(contLength.c_str());
+		if (!contLength.empty() && bodySize > 0) {
+			other.tmpBodySize = bodySize;
+			other.buf += "\r\n";
 			other.status = BODY;
 		} else 
 			other.status = COMPLETED;
@@ -147,7 +150,7 @@ void parseChunkedBody(Request &other) {
 		if (other.chunkStatus == END && other.buf == "\r\n") {
 			other.status = COMPLETED;
 			other.buf.erase(0, 2);
-			std::cout << "body " << other.body << '\n';
+			// std::cout << "body " << other.body << '\n';
 		}
 		str = other.buf.substr(0, lineEnd);
 		other.buf.erase(0, lineEnd + 2);
@@ -156,34 +159,40 @@ void parseChunkedBody(Request &other) {
 				other.buf.erase(0, 2);
 				return;
 			}
-			other.chunkSize = atol(str.c_str());
-			if (other.chunkSize == 0)
+			other.tmpBodySize = atol(str.c_str());
+			if (other.tmpBodySize == 0)
 				other.chunkStatus = END;
 			else
 				other.chunkStatus = TEXT;
 		}
 		else if (other.chunkStatus == TEXT) {
-			other.body += str.assign(str, 0, other.chunkSize);
+			other.body += str.assign(str, 0, other.tmpBodySize);
 			other.chunkStatus = NUM;
 		}
 	}
 }
 
 void parseBody(Request &other) { // check body for terminal
-	if (other.body.empty()) {
-		size_t lineEnd = other.buf.find("\r\n");
-		other.body.assign(other.buf, 0, lineEnd);
-		other.buf.erase(0, lineEnd + 2);
-	} 
+	other.body = other.buf.substr(0, other.tmpBodySize);
+	if (other.body.size() >= other.tmpBodySize) {
+		other.status = COMPLETED;
+	}
+		other.buf.erase();
+
+	// if (other.body.empty()) {
+	// 	size_t lineEnd = other.buf.find("\r\n");
+	// 	other.body.assign(other.buf, 0, lineEnd);
+	// 	other.buf.erase(0, lineEnd + 2);
+	// } 
 	if (other.method == "POST" && other.body.empty()) {
 		other.status = ERROR;
 		other.errorCode = 400;
 		other.buf.erase();
 	}
-	if (!other.body.empty() && other.buf.find("\r\n") != std::string::npos) {
-		other.buf.erase();
-		other.status = COMPLETED;
-	}
+	// if (!other.body.empty() && other.buf.find("\r\n") != std::string::npos) {
+	// 	other.buf.erase();
+	// 	other.status = COMPLETED;
+	// }
 
 
 }
@@ -195,19 +204,15 @@ void Request::parseFd(std::string req) {
 		switch (this->status) {
 			case START_LINE:
 				parseStartLine(*this);
-				// if (this->status == START_LINE || this->status == ERROR)
 					break;
 			case HEADERS:
 				parseHeader(*this);
-				// if (this->status == HEADERS)
 					break;
 			case BODY:
 				parseBody(*this);
-				// if (this->status == BODY)
 					break;
 			case CHUNKED_BODY:
 				parseChunkedBody(*this);
-				// if (this->status == CHUNKED_BODY)
 					break;
 			default:
 				return;
@@ -215,14 +220,14 @@ void Request::parseFd(std::string req) {
 		}
 	}
 /////////////////////////////PRINT:
-	std::cout << this->method << " " << this->path << " " << this->http << std::endl;
-	std::map<std::string, std::string>::iterator it2 = this->headers.begin();
-	while (it2 != this->headers.end()) {
-		std::cout << it2->first << ": " << it2->second << std::endl;
-		++it2;
-	}
-	if (this->body != "")
-		std::cout << this->body << std::endl;
+	// std::cout << this->method << " " << this->path << " " << this->http << std::endl;
+	// std::map<std::string, std::string>::iterator it2 = this->headers.begin();
+	// while (it2 != this->headers.end()) {
+	// 	std::cout << it2->first << ": " << it2->second << std::endl;
+	// 	++it2;
+	// }
+	// if (this->body != "")
+	// 	std::cout << this->body << std::endl;
 /////////////////////////////PRINT_END
 	if (this->status == COMPLETED || this->status == ERROR) {
 		if((this->locConf = findLocation(*this)) == NULL) {
@@ -232,7 +237,10 @@ void Request::parseFd(std::string req) {
 				cgiHandler();
 				return ;
 			} else {
-				createBody();
+				// if (allowed())
+					createBody();
+				// else {}
+				// 	ERROR;
 			}
 		}
 		if (this->status == ERROR)
@@ -240,7 +248,7 @@ void Request::parseFd(std::string req) {
 		createResponce();
 	}
 /////////////////////////////PRINT_RESPONCE
-	std::cout << this->responce << std::endl;
+	// std::cout << this->responce << std::endl;
 	// sleep (10);
 
 }
@@ -250,7 +258,7 @@ bool Request::checkIfCgi() {
 	if (!tmpCgiPath.compare(0, 2, "./")) {
 		tmpCgiPath.erase(0, 1);
 	}
-	if (this->aliasPath== tmpCgiPath) {
+	if (this->aliasPath == tmpCgiPath) {
 		std::string file = this->locConf->genL.root + "/" + this->locConf->cgiPath + this->locConf->cgiExtension;
 		std::ifstream fs;
 		fs.open(file);
@@ -283,13 +291,14 @@ void autoindexOn(Request &other) {
 	struct dirent *file;
 	std::string indexResponce;
 	std::ifstream fs;
-	std::string dirName = other.locConf->genL.root + other.path;
+	// std::string dirName = other.locConf->genL.root + other.path;
+	std::string dirName = other.fullPath;
 
 	if ((dir = opendir(dirName.c_str())) != NULL) { 
 		while ((file = readdir(dir)) != NULL) {
 			std::string tmp (file->d_name);
-			std::string slash = other.aliasPath[other.aliasPath.length() - 1] == '/' ? "" : "/";
-			std::string tmp_path = other.aliasPath +  slash + tmp;
+			std::string slash = other.path[other.path.length() - 1] == '/' ? "" : "/";
+			std::string tmp_path = other.path +  slash + tmp;
 			tmp = "<p><a href = \"" + tmp_path + "\">" + tmp + "</a></p>" ;
 			indexResponce += tmp;
 		}
@@ -305,7 +314,7 @@ void autoindexOn(Request &other) {
 }
 
 void Request::putMethod () {
-	std::cout << "||||||||||||||||||||||||||||" << this->fullPath << std::endl;
+	// std::cout << "||||||||||||||||||||||||||||" << this->fullPath << std::endl;
 	std::ofstream file;
 	file.open(this->fullPath);
 	file << this->body << std::endl;
@@ -328,7 +337,6 @@ void Request::createBody() { // devide into methods GET HEAD POST PUT DELETE
 	
 	// std::string tmp = "<html><head><title></title></head><body><p><img src=\"" + this->fullPath + "\" alt=\"lalal\"></p></body></html>\r\n";
 	
-	std::cout << this->fullPath << "<xxxxxxxxxxxxx" << "\n";
 	if (!tmp.empty()) {
 		// show file:
 		this->respBody = tmp;
@@ -407,5 +415,4 @@ void	Request::cgiHandler()
 void Request::setClientIpPort(const lIpPort &other)
 {
 	clientIpPort = other;
-	std::cout << "set func : " << clientIpPort.ip << ":" << clientIpPort.port << std::endl;
 }

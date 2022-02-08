@@ -5,10 +5,10 @@ server   {
 
 	server_name localhost;
 	location / {
-		allow GET PUT;
+		allow GET PUT POST;
 		autoindex on;
 		index index.html;
-		alias ./errors
+		alias ./testers/1
 		cgi ./helloo;
 		cgi_extension .cprog;
 	}

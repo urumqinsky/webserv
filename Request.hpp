@@ -33,6 +33,11 @@ enum chunkStatus {
 	END
 };
 
+enum bodySource {
+	STR,
+	FD
+};
+
 class Request {
 public:
 	Request(std::string Server);//to discuss
@@ -52,6 +57,7 @@ public:
 	friend void parseHeader(Request &other);
 	friend void parseBody(Request &other);
 	friend void parseChunkedBody(Request &other);
+	friend void writeToFile(Request &other, std::string str);
 	friend void	writeToClientSocket(int i, struct kevent *eventList);
 
 	void createResponce();
@@ -66,11 +72,16 @@ public:
 	bool checkIfCgi();
 	void cgiHandler();
 
+	void getPostMethod ();
+	// void postMethod ();
 	void putMethod ();
 	
 	void setClientIpPort(const lIpPort &other);
 	void makeRequestDefault();
+
+
 protected:
+	static unsigned long long requestNumber;
 	std::string method;
 	std::string path;
 	std::string http;
@@ -89,13 +100,15 @@ private:
 	Request(const Request &other);
 	Request	&operator=(const Request &other);
 
-	std::string body;
 	std::string buf;
 	int errorCode;
 
 
 	Status	status;
+	std::string body;
 	chunkStatus	chunkStatus;
+	bodySource bodySource;
+
 	size_t tmpBodySize;
 
 	std::string responce;

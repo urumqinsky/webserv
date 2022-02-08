@@ -1,9 +1,13 @@
 #include "Request.hpp"
 
+	unsigned long long Request::requestNumber = 0;
+
 Request::Request(htCont *conf, lIpPort *ip) {
+	this->requestNumber += 1;
 	this->status = START_LINE;
 	this->errorCode = 200;
 	this->chunkStatus = NUM;
+	this->bodySource = STR;
 	this->ip = ip->ip;
 	this->port = ip->port;
 	this->conf = conf;
@@ -27,6 +31,7 @@ void Request::makeRequestDefault() {
 	this->status = START_LINE;
 	this->errorCode = 200;
 	this->chunkStatus = NUM;
+	this->bodySource = STR;
 	this->method.erase();
 	this->path.erase();
 	this->http.erase();
@@ -83,7 +88,6 @@ void parseStartLine(Request &other) {
 			other.errorCode = 501; //to check
 			other.status = ERROR;
 			other.buf.erase();
-			std::cout << "error2" << std::endl;
 		} else if (other.http != "HTTP/1.1") {
 			other.status = ERROR;
 			other.errorCode = 505;
@@ -142,6 +146,23 @@ void parseHeader(Request &other) {
 	}
 }
 
+void writeToFile(Request &other, std::string str) {
+	std::stringstream tmp;
+	tmp << other.requestNumber;
+	std::string fileName = "xyz" + tmp.str();
+
+	std::fstream fs;
+	fs.open(fileName, std::fstream::app);
+	if (other.bodySource == STR) {
+		fs.write(other.body.c_str(), other.body.size());
+		other.body = fileName;
+		other.bodySource = FD;
+	}
+	fs.write(str.c_str(), str.size());
+	fs.close();
+
+
+}
 
 void parseChunkedBody(Request &other) {
 	size_t lineEnd;
@@ -166,14 +187,18 @@ void parseChunkedBody(Request &other) {
 				other.chunkStatus = TEXT;
 		}
 		else if (other.chunkStatus == TEXT) {
-			other.body += str.assign(str, 0, other.tmpBodySize);
+			if (str.size() > 10000 || other.bodySource == FD) {
+				writeToFile(other, str);
+			} else {
+				other.body += str.assign(str, 0, other.tmpBodySize);
+			}
 			other.chunkStatus = NUM;
 		}
 	}
 }
 
 void parseBody(Request &other) { // check body for terminal
-	other.body = other.buf.substr(0, other.tmpBodySize);
+	other.body += other.buf.substr(0, other.tmpBodySize - other.body.size());
 	if (other.body.size() >= other.tmpBodySize) {
 		other.status = COMPLETED;
 	}
@@ -184,7 +209,7 @@ void parseBody(Request &other) { // check body for terminal
 	// 	other.body.assign(other.buf, 0, lineEnd);
 	// 	other.buf.erase(0, lineEnd + 2);
 	// } 
-	if (other.method == "POST" && other.body.empty()) {
+	if ((other.method == "POST" || other.method == "PUT") && other.body.empty()) {
 		other.status = ERROR;
 		other.errorCode = 400;
 		other.buf.erase();
@@ -314,20 +339,57 @@ void autoindexOn(Request &other) {
 }
 
 void Request::putMethod () {
-	// std::cout << "||||||||||||||||||||||||||||" << this->fullPath << std::endl;
 	std::ofstream file;
 	file.open(this->fullPath);
 	file << this->body << std::endl;
 	file.close();
 }
 
+// void Request::postMethod () {
+// 	std::ofstream file(this->fullPath);
+// 	if (file.is_open()) {
+// 		file << this->body << std::endl;
+// 		file.close();
+// 	} else {
+// 		this->status = ERROR;
+// 		this->errorCode = 404;		
+// 	}
+// }
+
+void Request::getPostMethod () {
+	std::string indexFile;
+	std::string tmp = readFromFile(this->fullPath);
+	
+	// std::string tmp = "<html><head><title></title></head><body><p><img src=\"" + this->fullPath + "\" alt=\"lalal\"></p></body></html>\r\n";
+	
+	if (!tmp.empty()) {
+		// show file:
+		this->respBody = tmp;
+		return ;
+	} else if (!this->locConf->genL.index.empty()) {
+		indexFile = searchIndexFile(*this);
+	}
+	if (!indexFile.empty()){
+		this->respBody = indexFile;
+	} else if (this->locConf->genL.autoindex == 1) {
+			autoindexOn(*this);
+	} else {
+		this->status = ERROR;
+		this->errorCode = 404;
+	}
+}
+
 void Request::createBody() { // devide into methods GET HEAD POST PUT DELETE
 
-	if (this->method == "PUT") {
-		putMethod();
+	if (this->method == "GET" || this->method == "POST") {
+		getPostMethod();
 		return ;
 	}
-	if (this->method == "POST") {
+	// if (this->method == "POST") {
+	// 	postMethod();
+	// 	return ;
+	// }
+	if (this->method == "PUT") {
 		putMethod();
 		return ;
 	}

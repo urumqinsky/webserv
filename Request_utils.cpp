@@ -52,7 +52,8 @@ locCont *findLocation(Request &other) {
                     std::cout << rootPath << "<==========\n";
                     std::cout << S_ISREG(buf.st_mode) << "\n";
                     std::cout << S_ISDIR(buf.st_mode) << "\n";
-                    if (!S_ISREG(buf.st_mode) && !S_ISDIR(buf.st_mode)) {
+                    if (!S_ISREG(buf.st_mode) && !S_ISDIR(buf.st_mode) && other.method != "PUT") {
+                    // if (!S_ISREG(buf.st_mode) && !S_ISDIR(buf.st_mode)) {
                         std::cout << "<+++++++++++++" << "\n";
                         other.status = ERROR;
                         other.errorCode = 404;
@@ -62,13 +63,21 @@ locCont *findLocation(Request &other) {
                 }
                 ++it_begin;
             }
-        }
+        // int slash = other.pathConfCheck.rfind("/");
+        // if (slash == (int)other.pathConfCheck.find("/") && other.pathConfCheck.length() > 1)
+        //     slash = 1;
+        // if (slash != 1)
+        //     appndx = other.pathConfCheck.substr(slash) + appndx;
+        // other.pathConfCheck.erase(slash);
         int slash = other.pathConfCheck.rfind("/");
-        if (slash == (int)other.pathConfCheck.find("/") && other.pathConfCheck.length() > 1)
-            slash = 1;
-        if (slash != 1)
+        // if (other.pathConfCheck.length() > 1)
+        //     slash = 1;
+        // if (slash != 1)
             appndx = other.pathConfCheck.substr(slash) + appndx;
         other.pathConfCheck.erase(slash);
+        if (appndx == other.path)
+            other.pathConfCheck = "/";
+        }
     }
     return tmp;    
 }

@@ -78,12 +78,16 @@ void parseStartLine(Request &other) {
 		if (!(other.method == "GET" || other.method == "POST" || other.method == "DELETE" || other.method == "HEAD" || other.method == "PUT")) {
 			other.status = ERROR;
 			other.errorCode = 501;
-		} else if (other.http.empty()) {
+			other.buf.erase();
+		} else if (other.http.empty()) { // path is missing
+			other.errorCode = 501; //to check
 			other.status = ERROR;
+			other.buf.erase();
 			std::cout << "error2" << std::endl;
 		} else if (other.http != "HTTP/1.1") {
 			other.status = ERROR;
 			other.errorCode = 505;
+			other.buf.erase();
 		} else {
 			other.buf.erase(0, tmp.length() + 2);
 			other.status = HEADERS;
@@ -301,8 +305,10 @@ void autoindexOn(Request &other) {
 
 void Request::putMethod () {
 	std::cout << "||||||||||||||||||||||||||||" << this->fullPath << std::endl;
-	std::ofstream file(this->fullPath);
-	file << this->body << std::endl;;
+	std::ofstream file;
+	file.open(this->fullPath);
+	file << this->body << std::endl;
+	file.close();
 }
 
 void Request::createBody() { // devide into methods GET HEAD POST PUT DELETE

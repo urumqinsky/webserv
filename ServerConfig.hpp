@@ -16,12 +16,14 @@ struct	genCont
 
 struct	locCont
 {
-	std::vector<std::string>	locArgs; // path.begin() file
-	std::vector<std::string>	methods; // method
-	std::string					cgiPath;
-	std::string					cgiExtension;
-	std::vector<struct locCont>	locListL;
-	std::string					alias;
+	std::vector<std::string>			locArgs; // path.begin() file
+	std::vector<std::string>			methods; // method
+	std::string							cgiPath;
+	std::string							cgiExtension;
+	std::vector<struct locCont>			locListL;
+	std::string							alias;
+	std::string							authorization;
+	std::map<std::string, std::string>	users;
 	genCont						genL;
 };
 

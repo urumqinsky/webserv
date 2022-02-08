@@ -293,6 +293,7 @@ void autoindexOn(Request &other) {
 			tmp = "<p><a href = \"" + tmp_path + "\">" + tmp + "</a></p>" ;
 			indexResponce += tmp;
 		}
+
 		other.respBody += "<html><head><title></title></head><body>" + indexResponce + "</body></html>\r\n";
 		closedir(dir);
 	} else {
@@ -317,7 +318,10 @@ void Request::createBody() { // devide into methods GET HEAD POST PUT DELETE
 		putMethod();
 		return ;
 	}
-
+	if (this->method == "POST") {
+		putMethod();
+		return ;
+	}
 
 	std::string indexFile;
 	std::string tmp = readFromFile(this->fullPath);
@@ -327,7 +331,6 @@ void Request::createBody() { // devide into methods GET HEAD POST PUT DELETE
 	std::cout << this->fullPath << "<xxxxxxxxxxxxx" << "\n";
 	if (!tmp.empty()) {
 		// show file:
-		// this->respBody += "<html><head><title></title></head><body><p>" + tmp + "</p></body></html>\r\n";
 		this->respBody = tmp;
 		return ;
 	} else if (!this->locConf->genL.index.empty()) {
@@ -359,6 +362,7 @@ void Request::createResponce() {
 	tmpLength << this->respBody.size();
 	std::string contLength = tmpLength.str();
 	this->responce = this->http  + " " +  createStatusLine(this->errorCode, this->allErrorCodes) + "\r\n";
+	// this->responce = "WWW-Authenticate: Basic realm=\"My Server\"\r\n";
 	this->responce += "Date: " + provaideDate() + "\r\n";
 	this->responce += "Server: " + this->serverName + "\r\n";
 	this->responce += "Content-Length:" +  contLength + "\r\n";
@@ -398,4 +402,10 @@ void	Request::cgiHandler()
 	close(fd[0]);
 	this->responce = std::string(buf);
 	this->status = COMPLETED;
+}
+
+void Request::setClientIpPort(const lIpPort &other)
+{
+	clientIpPort = other;
+	std::cout << "set func : " << clientIpPort.ip << ":" << clientIpPort.port << std::endl;
 }

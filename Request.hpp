@@ -68,6 +68,7 @@ public:
 
 	void putMethod ();
 	
+	void setClientIpPort(const lIpPort &other);
 	void makeRequestDefault();
 protected:
 	std::string method;
@@ -82,6 +83,7 @@ protected:
 	locCont *locConf;
 	std::string ip;
 	int port;
+	lIpPort clientIpPort;
 
 private:
 	Request(const Request &other);

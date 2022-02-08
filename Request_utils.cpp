@@ -98,18 +98,11 @@ std::string createStatusLine(int code, std::map<int, std::string> &m) {
 }
 
 std::string readFromFile(std::string file) {
-		std::ifstream fs(file);
-        // fs.open(file);
-		std::string buf;
-		std::string tmp;
-        if (fs.good()) {
-            while (getline(fs, buf))
-                tmp += buf;
-            fs.close();
-            return tmp;
-        }
-        return tmp;
-
+    std::ifstream fs(file);
+    std::stringstream buffer;
+    buffer << fs.rdbuf();
+    fs.close();
+    return (buffer.str());
 }
 
 std::string getHeader(std::string token, std::map<std::string, std::string> &headers) {

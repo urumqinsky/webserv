@@ -7,14 +7,14 @@ server   {
 		allow GET;
 		autoindex off;
 		index youpi.bad_extension;
-		alias ./YoupiBanane/
+		alias ./testers/YoupiBanane/
 
 	}
 	location /test {
 		allow GET POST;
 		autoindex off;
 		index youpi.bad_extension;
-		alias ./YoupiBanane/hello;
+		alias ./testers/YoupiBanane/hello;
 		cgi ./cgi_tester;
         cgi_extension .bla;
     	}
@@ -22,7 +22,7 @@ server   {
 		allow GET POST;
 		autoindex off;
 		index youpi.bad_extension;
-		alias ./YoupiBanane;
+		alias ./testers/YoupiBanane;
 		cgi ./cgi_tester;
         cgi_extension .bla;
 	}
@@ -30,7 +30,7 @@ server   {
 		allow GET;
 		autoindex off;
 		index youpi.bad_extension;
-		alias ./YoupiBanane;
+		alias ./testers/YoupiBanane;
 		cgi ./cgi_tester;
         cgi_extension .bla;
 	}
@@ -39,7 +39,7 @@ server   {
 		max_body_size 100;
 		autoindex off;
 		index youpi.bad_extension;
-		alias ./YoupiBanane;
+		alias ./testers/YoupiBanane;
 		cgi ./cgi_tester;
         cgi_extension .bla;
 	}

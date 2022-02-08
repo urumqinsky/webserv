@@ -1,13 +1,13 @@
 server   {
 	ip 127.0.0.1;
 	port 4444;
+	root /Users/heula/webserv;
 
 	server_name localhost;
 	location / {
-		allow GET;
+		allow GET PUT q;
 		autoindex on;
-		index index1.html;
-		alias ./testers/YoupiBanane;
+		index index.html;
 		cgi ./helloo;
 		cgi_extension .cprog;
 	}
@@ -22,10 +22,11 @@ server   {
 		cgi_extension .cprog;
 	}
 	location /nginx_test  {
-		index login.html;
 		allow GET;
+		autoindex on;
+		root /Users/heula/webserv;
 		max_body_size 55;
-		authorization on;
+		autoindex on;
 	}
 		location /nginx_test/data  {
 		allow GET;

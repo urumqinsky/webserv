@@ -41,14 +41,9 @@ locCont *findLocation(Request &other) {
             while (it_begin != it_end) {
                 if ((*it_begin).locArgs[0] == other.pathConfCheck) {
                     if (std::count((*it_begin).methods.begin(), (*it_begin).methods.end(), other.method) == 0) {
-                        // std::cout << "METHOD " << other.method << "\n";
                         other.status = ERROR;
                         other.errorCode = 405;
                     }
-                    // other.aliasPath = ifAlias(&(*it_begin), other.path) + appndx;
-                    // other.fullPath = (*it_begin).genL.root + "/" + other.aliasPath;
-                    // std::string rP = (*it_begin).genL.root + "/" + other.aliasPath;
-                    // const char *rootPath = rP.c_str();
                     other.aliasPath = ifAlias(&(*it_begin), other.pathConfCheck) + appndx;
                     other.fullPath = (*it_begin).genL.root + "/" + other.aliasPath;
                     const char *rootPath = other.fullPath .c_str();
@@ -57,7 +52,8 @@ locCont *findLocation(Request &other) {
                     std::cout << rootPath << "<==========\n";
                     std::cout << S_ISREG(buf.st_mode) << "\n";
                     std::cout << S_ISDIR(buf.st_mode) << "\n";
-                    if (!S_ISREG(buf.st_mode) && !S_ISDIR(buf.st_mode)) {
+                    if (!S_ISREG(buf.st_mode) && !S_ISDIR(buf.st_mode) && other.method != "PUT") {
+                    // if (!S_ISREG(buf.st_mode) && !S_ISDIR(buf.st_mode)) {
                         std::cout << "<+++++++++++++" << "\n";
                         other.status = ERROR;
                         other.errorCode = 404;
@@ -67,13 +63,21 @@ locCont *findLocation(Request &other) {
                 }
                 ++it_begin;
             }
-        }
+        // int slash = other.pathConfCheck.rfind("/");
+        // if (slash == (int)other.pathConfCheck.find("/") && other.pathConfCheck.length() > 1)
+        //     slash = 1;
+        // if (slash != 1)
+        //     appndx = other.pathConfCheck.substr(slash) + appndx;
+        // other.pathConfCheck.erase(slash);
         int slash = other.pathConfCheck.rfind("/");
-        if (slash == (int)other.pathConfCheck.find("/") && other.pathConfCheck.length() > 1)
-            slash = 1;
-        if (slash != 1)
+        // if (other.pathConfCheck.length() > 1)
+        //     slash = 1;
+        // if (slash != 1)
             appndx = other.pathConfCheck.substr(slash) + appndx;
         other.pathConfCheck.erase(slash);
+        if (appndx == other.path)
+            other.pathConfCheck = "/";
+        }
     }
     return tmp;    
 }
@@ -94,16 +98,17 @@ std::string createStatusLine(int code, std::map<int, std::string> &m) {
 }
 
 std::string readFromFile(std::string file) {
-		std::ifstream fs(file);
-        // fs.open(file);
-		std::string buf;
-		std::string tmp;
-        if (fs.good()) {
-            while (getline(fs, buf))
-                tmp += buf;
-            fs.close();
-            return tmp;
-        }
-        return tmp;
+    std::ifstream fs(file);
+    std::stringstream buffer;
+    buffer << fs.rdbuf();
+    fs.close();
+    return (buffer.str());
+}
 
+std::string getHeader(std::string token, std::map<std::string, std::string> &headers) {
+	std::string result;
+	if (headers.find(token) != headers.end()) {
+		result = headers.find(token)->second;
+	}
+	return result;
 }

@@ -13,11 +13,13 @@ std::string provaideDate();
 std::string readFromFile(std::string file);
 std::string createStatusLine(int code, std::map<int, std::string> &m);
 std::string ifAlias(locCont *locConf, std::string path);
+std::string getHeader(std::string token, std::map<std::string, std::string> &headers);
 // std::string clearFromSlash(std::string str);
 
 enum Status {
 	START_LINE,
 	HEADERS,
+	HEAD_END,
 	BODY,
 	CHUNKED_BODY,
 	COMPLETED,
@@ -27,7 +29,8 @@ enum Status {
 
 enum chunkStatus {
 	NUM,
-	TEXT
+	TEXT,
+	END
 };
 
 class Request {
@@ -48,6 +51,7 @@ public:
 	friend void parseStartLine(Request &other);
 	friend void parseHeader(Request &other);
 	friend void parseBody(Request &other);
+	friend void parseChunkedBody(Request &other);
 	friend void	writeToClientSocket(int i, struct kevent *eventList);
 
 	void createResponce();
@@ -61,6 +65,9 @@ public:
 	// void checkSetAlias(locCont *locConf);
 	bool checkIfCgi();
 	void cgiHandler();
+
+	void putMethod ();
+	
 	void setClientIpPort(const lIpPort &other);
 	void makeRequestDefault();
 
@@ -96,6 +103,7 @@ private:
 
 	Status	status;
 	chunkStatus	chunkStatus;
+	size_t chunkSize;
 
 	std::string responce;
 	std::string respBody;

@@ -53,6 +53,8 @@ void parseStartLine(Request &other) {
 	if (other.requestLine.empty()) {
 		other.status = ERROR;
 		other.errorCode = 404;
+		other.buf.erase(0, 2);
+		return ;
 	} else {
 		char *tmp2 = new char[other.requestLine.length() + 1];
 		std::strcpy (tmp2, other.requestLine.c_str());
@@ -74,15 +76,19 @@ void parseStartLine(Request &other) {
 		other.errorCode = 404;
 	} 		
 		delete[] tmp2;
-		if (!(other.method == "GET" || other.method == "POST" || other.method == "DELETE" || other.method == "HEAD")) {
+		if (!(other.method == "GET" || other.method == "POST" || other.method == "DELETE" || other.method == "HEAD" || other.method == "PUT")) {
 			other.status = ERROR;
 			other.errorCode = 501;
-		} else if (other.http.empty()) {
+			other.buf.erase();
+		} else if (other.http.empty()) { // path is missing
+			other.errorCode = 501; //to check
 			other.status = ERROR;
+			other.buf.erase();
 			std::cout << "error2" << std::endl;
 		} else if (other.http != "HTTP/1.1") {
 			other.status = ERROR;
 			other.errorCode = 505;
+			other.buf.erase();
 		} else {
 			other.buf.erase(0, other.requestLine.length() + 2);
 			other.status = HEADERS;
@@ -94,7 +100,7 @@ void parseHeader(Request &other) {
 	std::string first;
 	std::string second;
 	if (other.buf.find("\r\n\r\n") != std::string::npos || other.buf == "\r\n")
-		other.status = BODY;
+		other.status = HEAD_END;
 	while (other.buf.find("\r\n") != std::string::npos && other.buf.find("\r\n") != 0) {
 		first = other.buf.substr(0, other.buf.find(":"));
 		size_t size = first.length();
@@ -108,7 +114,7 @@ void parseHeader(Request &other) {
 		other.headers.insert(std::pair<std::string, std::string>(first, second));
 		other.buf.erase(0, first.length() + second.length() + 2 + 1);
 	}
-	if (other.status == BODY) {
+	if (other.status == HEAD_END) {
 		other.buf.erase(0, 2);
 		std::map<std::string, std::string>::iterator it = other.headers.begin();
 		while (it != other.headers.end()) {
@@ -121,43 +127,92 @@ void parseHeader(Request &other) {
 		}
 		std::string tmp = other.headers.find("HOST")->second;
 		other.headers.find("HOST")->second = tmp.substr(0, tmp.find(":"));
+		if (getHeader("TRANSFER_ENCODING", other.headers) == "chunked") {
+			other.status = CHUNKED_BODY;
+			return ;
+		}
+		std::string contLength = getHeader("CONTENT_LENGTH", other.headers);
+		// } else if (atoi(getHeader("CONTENT-LENGHT", other.headers).c_str()) > 0) {
+		if (!contLength.empty() && atoi(contLength.c_str()) > 0) {
+			other.status = BODY;
+		} else 
+			other.status = COMPLETED;
+
+	}
+}
+
+
+void parseChunkedBody(Request &other) {
+	size_t lineEnd;
+	std::string str;
+	while (other.status == CHUNKED_BODY && (lineEnd = other.buf.find("\r\n")) != std::string::npos) {
+		if (other.chunkStatus == END && other.buf == "\r\n") {
+			other.status = COMPLETED;
+			other.buf.erase(0, 2);
+			std::cout << "body " << other.body << '\n';
+		}
+		str = other.buf.substr(0, lineEnd);
+		other.buf.erase(0, lineEnd + 2);
+		if (other.chunkStatus == NUM) {
+			if (str.empty()) {
+				other.buf.erase(0, 2);
+				return;
+			}
+			other.chunkSize = atol(str.c_str());
+			if (other.chunkSize == 0)
+				other.chunkStatus = END;
+			else
+				other.chunkStatus = TEXT;
+		}
+		else if (other.chunkStatus == TEXT) {
+			other.body += str.assign(str, 0, other.chunkSize);
+			other.chunkStatus = NUM;
+		}
 	}
 }
 
 void parseBody(Request &other) { // check body for terminal
-	if (other.buf.find("\r\n\r\n") != std::string::npos) {
-		other.body.assign(other.buf, 0, other.buf.length() - 4);
-		other.buf.erase();
-	}
+	if (other.body.empty()) {
+		size_t lineEnd = other.buf.find("\r\n");
+		other.body.assign(other.buf, 0, lineEnd);
+		other.buf.erase(0, lineEnd + 2);
+	} 
 	if (other.method == "POST" && other.body.empty()) {
 		other.status = ERROR;
 		other.errorCode = 400;
-	} else {
+		other.buf.erase();
+	}
+	if (!other.body.empty() && other.buf.find("\r\n") != std::string::npos) {
+		other.buf.erase();
 		other.status = COMPLETED;
 	}
+
+
 }
 
 
 void Request::parseFd(std::string req) {
-
 	this->buf += req;
-	if (this->buf.find("\r\n") != std::string::npos) {
-	std::cout << buf << "\n";
+	while (this->buf.find("\r\n") != std::string::npos) {
 		switch (this->status) {
 			case START_LINE:
 				parseStartLine(*this);
-				if (this->status == START_LINE || this->status == ERROR)
+				// if (this->status == START_LINE || this->status == ERROR)
 					break;
 			case HEADERS:
 				parseHeader(*this);
-				if (this->status == HEADERS)
+				// if (this->status == HEADERS)
 					break;
 			case BODY:
 				parseBody(*this);
-				if (this->status == BODY)
+				// if (this->status == BODY)
+					break;
+			case CHUNKED_BODY:
+				parseChunkedBody(*this);
+				// if (this->status == CHUNKED_BODY)
 					break;
 			default:
-				break;
+				return;
 
 		}
 	}
@@ -173,10 +228,6 @@ void Request::parseFd(std::string req) {
 /////////////////////////////PRINT_END
 	if (this->status == COMPLETED || this->status == ERROR) {
 		if((this->locConf = findLocation(*this)) == NULL) {
-			// if (this->status != ERROR) {
-			// 	this->status = ERROR;
-			// 	this->errorCode = 404;
-			// }
 			std::cout << "checkRequest error. Location not found" << "\n";
 		} else {
 			int res = checkIfCgi();
@@ -242,37 +293,43 @@ void autoindexOn(Request &other) {
 	std::string dirName = other.locConf->genL.root + other.path;
 
 	if ((dir = opendir(dirName.c_str())) != NULL) { 
-		//show files in path:
 		while ((file = readdir(dir)) != NULL) {
 			std::string tmp (file->d_name);
-			// std::string slash = other.path[other.path.length() - 1] == '/' ? "" : "/";
-			// std::string tmp_path = other.aliasPath +  slash + tmp;
 			std::string slash = other.aliasPath[other.aliasPath.length() - 1] == '/' ? "" : "/";
 			std::string tmp_path = other.aliasPath +  slash + tmp;
 			tmp = "<p><a href = \"" + tmp_path + "\">" + tmp + "</a></p>" ;
 			indexResponce += tmp;
 		}
-		// other.respBody += "<html><head><title></title></head><body>" + indexResponce + "</body></html>\r\n";
 		other.respBody += "<html><head><title></title></head><body>" + indexResponce + "</body></html>\r\n";
 		closedir(dir);
 	} else {
-		// std::string tmp = readFromFile(dirName);
-		// if (!tmp.empty()) {
-		// 	// show file:
-		// 	other.respBody += "<html><head><title></title></head><body><p>" + tmp + "</p></body></html>\r\n";
-		// } else {
 			other.status = ERROR;
 			other.errorCode = 404;
 			std::cout << "autoindex ERROR" << "\n";
-		// }
 	}
 
 }
 
+void Request::putMethod () {
+	std::cout << "||||||||||||||||||||||||||||" << this->fullPath << std::endl;
+	std::ofstream file;
+	file.open(this->fullPath);
+	file << this->body << std::endl;
+	file.close();
+}
 
-void Request::createBody() {
+void Request::createBody() { // devide into methods GET HEAD POST PUT DELETE
+
+	if (this->method == "PUT") {
+		putMethod();
+		return ;
+	}
+	if (this->method == "POST") {
+		putMethod();
+		return ;
+	}
+
 	std::string indexFile;
-	// std::string tmp = readFromFile(this->locConf->genL.root + "/" + this->aliasPath);
 	std::string tmp = readFromFile(this->fullPath);
 	
 	// std::string tmp = "<html><head><title></title></head><body><p><img src=\"" + this->fullPath + "\" alt=\"lalal\"></p></body></html>\r\n";
@@ -280,7 +337,6 @@ void Request::createBody() {
 	std::cout << this->fullPath << "<xxxxxxxxxxxxx" << "\n";
 	if (!tmp.empty()) {
 		// show file:
-		this->respBody += "<html><head><title></title></head><body><p>" + tmp + "</p></body></html>\r\n";
 		this->respBody = tmp;
 		return ;
 	} else if (!this->locConf->genL.index.empty()) {

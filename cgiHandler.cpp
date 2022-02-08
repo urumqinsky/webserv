@@ -1,7 +1,7 @@
 #include "Request.hpp"
 #include <sstream>
 
-#define ENVNUMS 15
+#define ENVNUMS 14
 
 // CONVERT INTEGER TO STRING
 template<typename T>
@@ -13,13 +13,12 @@ std::string integerToString(T number) {
 
 // PARSE AND GET QUERY_STRING
 std::string Request::getQueryString() {
-	std::string query;
-	if (this->path.find("?") != std::string::npos) {
-
+	size_t pos = this->path.find("?");
+	if (pos != std::string::npos) {
+		return this->path.substr(pos + 1, this->path.length());
 	} else {
-		query = "";
+		return "";
 	}
-	return query;
 }
 
 // GET CONTENT_LENGTH
@@ -64,14 +63,21 @@ void	Request::cgiHandler()
 	env[i++] = ("CONTENT_LENGTH=" + getContentLenght()).c_str();
 	env[i++] = ("CONTENT_TYPE=" + headers.find("CONTENT_TYPE")->second).c_str();
 	env[i++] = ("PATH_INFO=");
-	env[i++] = ("QUERY_STRING=" + getQueryString(this->path)).c_str();
+	env[i++] = ("QUERY_STRING=" + getQueryString()).c_str();
 	// env[i++] = ("REMOTE_ADDR=");
 	// env[i++] = ("REMOTE_HOST |");
 	env[i++] = ("REQUEST_METHOD=" + this->method).c_str();
 	env[i++] = ("REQUEST_LINE=" + this->requestLine).c_str();
 	// env[i++] = ("SCRIPT_NAME=" + getFileName()).c_str();
-	env[ENVNUMS] = NULL;
+	std::map <std::string, std::string>::iterator it2 = headers.end();
+	for (std::map <std::string, std::string>::iterator it = headers.begin(); it != it2; ++it) {
+		env[i++] = ("HTTP_" + it->first + "=" + it->second).c_str();
+	}
+	env[ENVNUMS + headers.size()] = NULL;
 
+	for (unsigned int t = 0; t < (ENVNUMS + headers.size()); t++) {
+		std::cout << env[t] << std::endl;
+	}
 	int fd[2]; // fd[0] - read, fd[1] - write
 	if (pipe(fd) == -1) {
 		printError("pipe() error");

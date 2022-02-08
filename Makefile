@@ -15,6 +15,7 @@ SRCS = main.cpp \
 	Request.cpp \
 	Request_utils.cpp \
 	socketIO.cpp \
+	cgiHandler.cpp \
 
 OBJS = $(SRCS:.cpp=.o)
 

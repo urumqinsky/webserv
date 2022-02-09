@@ -75,21 +75,12 @@ locCont *findLocation(Request &other) {
                 }
                 ++it_begin;
             }
-        // int slash = other.pathConfCheck.rfind("/");
-        // if (slash == (int)other.pathConfCheck.find("/") && other.pathConfCheck.length() > 1)
-        //     slash = 1;
-        // if (slash != 1)
-        //     appndx = other.pathConfCheck.substr(slash) + appndx;
-        // other.pathConfCheck.erase(slash);
-        // if (other.pathConfCheck.length() > 1)
-        //     slash = 1;
-        // if (slash != 1)
+        }
         int slash = other.pathConfCheck.rfind("/");
         appndx = other.pathConfCheck.substr(slash) + appndx;
         other.pathConfCheck.erase(slash);
         if (appndx == other.path)
             other.pathConfCheck = "/";
-        }
     }
     return tmp;    
 }

@@ -256,7 +256,8 @@ void Request::parseFd(std::string req) {
 /////////////////////////////PRINT_END
 	if (this->status == COMPLETED || this->status == ERROR) {
 		if((this->locConf = findLocation(*this)) == NULL) {
-			std::cout << "checkRequest error. Location not found" << "\n";
+			this->locConf = &(*(*this->conf->serverList.begin()).locListS.begin());
+			// std::cout << "checkRequest error. Location not found" << "\n";
 		} else {
 			if (!this->locConf->cgiPath.empty() && !this->locConf->cgiExtension.empty() && checkIfCgi()) {
 				cgiHandler();

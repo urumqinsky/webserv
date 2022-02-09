@@ -45,7 +45,6 @@ void Request::makeRequestDefault() {
 	this->tmpBodySize = 0;
 	this->chunkedBodySize = 0;
 	this->serverName.erase();
-
 }
 
 void Request::setAllErrorCodes() {
@@ -75,7 +74,7 @@ void parseStartLine(Request &other) {
 			if ((tmp3 = std::strtok(NULL, " ")) != NULL) {
 				other.path = tmp3;
 				if ((tmp3 = std::strtok(NULL, " ")) != NULL) {
-					other.http = tmp3; 
+					other.http = tmp3;
 				}
 			}
 		} else {
@@ -85,7 +84,7 @@ void parseStartLine(Request &other) {
 	if (other.method.empty() || other.path.empty() || other.http.empty()) {
 		other.status = ERROR;
 		other.errorCode = 404;
-	} 		
+	}
 		delete[] tmp2;
 		if (!(other.method == "GET" || other.method == "POST" || other.method == "DELETE" || other.method == "HEAD" || other.method == "PUT")) {
 			other.status = ERROR;
@@ -147,7 +146,7 @@ void parseHeader(Request &other) {
 			other.tmpBodySize = bodySize;
 			other.buf += "\r\n";
 			other.status = BODY;
-		} else 
+		} else
 			other.status = COMPLETED;
 
 	}
@@ -211,7 +210,7 @@ void parseBody(Request &other) { // check body for terminal
 	if (other.body.size() >= other.tmpBodySize) {
 		other.status = COMPLETED;
 	}
-		other.buf.erase();
+	other.buf.erase();
 
 	// if (other.body.empty()) {
 	// 	size_t lineEnd = other.buf.find("\r\n");
@@ -227,7 +226,6 @@ void parseBody(Request &other) { // check body for terminal
 	// 	other.buf.erase();
 	// 	other.status = COMPLETED;
 	// }
-
 
 }
 
@@ -277,16 +275,75 @@ void Request::parseFd(std::string req) {
 	if (this->status == COMPLETED || this->status == ERROR) {
 		if((this->locConf = findLocation(*this)) == NULL) {
 			this->locConf = &(*(*this->conf->serverList.begin()).locListS.begin());
-			// std::cout << "checkRequest error. Location not found" << "\n";
+			std::cout << "checkRequest error. Location not found" << "\n";
 		} else {
+			int res = checkIfCgi();
+			std::cout << res << std::endl;
 			if (!this->locConf->cgiPath.empty() && !this->locConf->cgiExtension.empty() && checkIfCgi()) {
+				std::cout << "good cgi\n";
 				cgiHandler();
+				createResponce();
+				std::cout << this->responce << std::endl;
 				return ;
-			} else if (checkRequest(*this)){
-				// if (allowed())
+			} else if (checkRequest(*this)) {
+				if (this->locConf->authorization == "on")
+				{
+					std::map<std::string, std::string>::iterator it = this->headers.find("Cookie");
+					if (it == headers.end())
+					{
+						if (this->method != "POST" && (this->headers.find("COOKIE") == this->headers.end()))
+						{
+							this->respBody += "<!DOCTYPE html>\n<html>\n<head>\n";
+							this->respBody += "<title>TOP SECRET</title>\n</head>\n<body>\n";
+							this->respBody += "<h1>Please enter your login and password ";
+							this->respBody += "<br>for accessing top secret files</h1>\n";
+							this->respBody += "<form method=\"POST\" action=";
+							this->respBody += this->path + '\n';
+							this->respBody += "<label>username: <input type=\"text\" name=\"username\" autocomplete=\"username\" required></label><br>\n";
+							this->respBody += "<label>password: <input type=\"password\" name=\"password\" autocomplete=\"current-password\" required></label><br>\n";
+							this->respBody += "<button type=\"submit\">Login</button>\n</form>\n</body>\n</html>";
+						}
+						else if (this->method != "POST")
+						{
+							std::map<std::string, std::string>::iterator it = this->headers.find("COOKIE");
+							std::string sessionID = it->second;
+							sessionID = sessionID.substr(sessionID.find("=") + 1);
+							it = this->locConf->users.begin();
+							for ( ; it != this->locConf->users.end(); ++it)
+							{
+								if (it->second == sessionID)
+									break ;
+							}
+							if (it != this->locConf->users.end())
+								createBody();
+
+						}
+						else if (this->method == "POST")
+						{
+							char *tmp = new char[this->body.length() + 1];
+							std::strcpy(tmp, this->body.c_str());
+							std::string login = strtok(tmp, "&");
+							size_t n = login.find("=");
+							login = login.substr(n + 1);
+							std::string password = strtok(NULL, "&");
+							n = password.find("=");
+							password = password.substr(n + 1);
+							delete [] tmp;
+							std::map<std::string, std::string>::iterator it = this->locConf->users.find(login + password);
+							if (it != this->locConf->users.end())
+							{
+								this->cookie = "SESSION_ID=" + it->second;
+								this->method = "GET";
+								createBody();
+							}
+							else
+								this->errorCode = 401;
+								this->status = ERROR;
+						}
+					}
+				}
+				else
 					createBody();
-				// else {}
-				// 	ERROR;
 			}
 		}
 		if (this->status == ERROR)
@@ -304,15 +361,15 @@ bool Request::checkIfCgi() {
 	if (!tmpCgiPath.compare(0, 2, "./")) {
 		tmpCgiPath.erase(0, 1);
 	}
-	std::cout << this->path << " " << tmpCgiPath << std::endl;
+	std::cout << this->aliasPath << " --- " << tmpCgiPath << std::endl;
 	if (clearFromSlash(this->aliasPath) == clearFromSlash(tmpCgiPath)) {
-		std::string file = this->locConf->genL.root + "/" + this->locConf->cgiPath + this->locConf->cgiExtension;
-		std::ifstream fs;
-		fs.open(file);
-		if (fs.is_open()) {
-			fs.close();
+		// std::string file = this->locConf->genL.root + "/" + this->locConf->cgiPath + this->locConf->cgiExtension;
+		// std::ifstream fs;
+		// fs.open(file);
+		// if (fs.is_open()) {
+		// 	fs.close();
 			return 1;
-		}
+		// }
 	}
 	return 0;
 }
@@ -341,7 +398,7 @@ void autoindexOn(Request &other) {
 	// std::string dirName = other.locConf->genL.root + other.path;
 	std::string dirName = other.fullPath;
 
-	if ((dir = opendir(dirName.c_str())) != NULL) { 
+	if ((dir = opendir(dirName.c_str())) != NULL) {
 		while ((file = readdir(dir)) != NULL) {
 			std::string tmp (file->d_name);
 			std::string slash = other.path[other.path.length() - 1] == '/' ? "" : "/";
@@ -379,21 +436,10 @@ void Request::putMethod () {
 	file.close();
 }
 
-// void Request::postMethod () {
-// 	std::ofstream file(this->fullPath);
-// 	if (file.is_open()) {
-// 		file << this->body << std::endl;
-// 		file.close();
-// 	} else {
-// 		this->status = ERROR;
-// 		this->errorCode = 404;		
-// 	}
-// }
-
 void Request::getPostMethod () {
 	std::string indexFile;
 	std::string tmp = readFromFile(this->fullPath);
-	
+
 	// std::string tmp = "<html><head><title></title></head><body><p><img src=\"" + this->fullPath + "\" alt=\"lalal\"></p></body></html>\r\n";
 	
 	if (!tmp.empty()) {
@@ -415,7 +461,7 @@ void Request::getPostMethod () {
 
 void Request::createBody() { // devide into methods GET HEAD POST PUT DELETE
 
-	if (this->method == "GET" || this->method == "POST") {
+	if (this->method == "GET" || (this->method == "POST" && this->cookie.empty())) {
 		getPostMethod();
 		return ;
 	}
@@ -468,16 +514,15 @@ void Request::createResponce() {
 	std::string contLength = integerToString(this->respBody.size());
 	
 	this->responce = this->http  + " " +  createStatusLine(this->errorCode, this->allErrorCodes) + "\r\n";
-	// this->responce = "WWW-Authenticate: Basic realm=\"My Server\"\r\n";
 	this->responce += "Date: " + provaideDate() + "\r\n";
 	this->responce += "Server: " + this->serverName + "\r\n";
 	this->responce += "Content-Length:" +  contLength + "\r\n";
-	
-	// this->responce += "Content-Type: image/jpeg\r\n";
-	
+	if (!this->cookie.empty())
+	{
+		this->responce += "Set-Cookie:" + this->cookie + "\r\n";
+		this->cookie.erase();
+	}
 	this->responce += "Connection: Keep-Alive\r\n\r\n";
-	
-
 	this->responce += this->respBody;
 	this->status = COMPLETED;
 }

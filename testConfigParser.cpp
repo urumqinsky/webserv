@@ -46,7 +46,12 @@ void printLocation(locCont &loc)
 		std::cout << '\n';
 	}
 	if (loc.authorization == "on")
+	{
 		std::cout << "authorization " << loc.authorization << '\n';
+		std::map<std::string, std::string>::iterator it = loc.users.begin();
+		for ( ; it != loc.users.end(); ++it)
+			std::cout << it->first << "=" << it->second << std::endl;
+	}
 	printGeneral(loc.genL);
 	if (loc.locListL.size() != 0)
 	{

@@ -99,6 +99,7 @@ protected:
 	std::string fullPath; //with root
 	std::string pathConfCheck;
 	std::map <std::string, std::string> headers;
+	std::string cookie;
 
 	htCont *conf;
 	locCont *locConf;

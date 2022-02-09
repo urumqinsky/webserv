@@ -98,7 +98,7 @@ void	Request::cgiHandler()
 	env[i++] = strdup(("SERVER_NAME=" + getHeader("HOST", this->headers)).c_str());
 	env[i++] = strdup(("SERVER_PORT=" + integerToString(port)).c_str());
 	env[i++] = strdup(("SERVER_PROTOCOL=" + http).c_str());
-	env[i++] = strdup(("SERVER_SOFTWARE=" + serverName).c_str());
+	env[i++] = strdup(("SERVER_SOFTWARE=" + std::string("testname")).c_str());
 
 	// REQUEST ENV 
 	env[i++] = strdup(("CONTENT_LENGTH=" + getContentLenght()).c_str());
@@ -134,11 +134,10 @@ void	Request::cgiHandler()
 		printError("fork() error");
 	}
 	if (pid == 0) {
-		std::cout << "hello from child" << std::endl;
+		// std::cout << "hello from child" << std::endl;
 		dup2(fd[1], STDOUT_FILENO);
 		close(fd[0]);
 		close(fd[1]);
-		std::cout << "hello from child" << std::endl;
 		//find cgi file and put it with full path to execve
 		execve(argv[0], argv, env);
 		//
@@ -149,10 +148,10 @@ void	Request::cgiHandler()
 	while (count > 0) {
 		memset(buf, 0, 200);
 		count = read(fd[0], buf, 200);
-		this->responce += buf;
+		this->respBody += buf;
 	}
 	close(fd[0]);
-	std::cout << this->responce.length() << std::endl;
+	// std::cout << this->respBody << std::endl;
 	// this->responce = std::string(buf);
 	this->status = COMPLETED;
 }

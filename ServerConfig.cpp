@@ -197,7 +197,15 @@ locCont	ServerConfig::parseLocation(std::ifstream &in, std::string &line,
 				newLoc.locListL.push_back(lc);
 			}
 			else if (!(splitted[0].compare("authorization")))
+			{
 				newLoc.authorization = splitted[1];
+				if (newLoc.authorization == "on")
+				{
+					newLoc.users.insert(std::pair<std::string, std::string>("ltuluneltulune", "oiwerhashasljfpaosf"));
+					newLoc.users.insert(std::pair<std::string, std::string>("rlandorlando", "ldskfttdlkjsakjlkas"));
+					newLoc.users.insert(std::pair<std::string, std::string>("heulaheula", "aeirjdlfknnbtsdsadf"));
+				}
+			}
 			else
 			{
 				std::cerr << "Invalid configuration file" << std::endl;
@@ -205,6 +213,7 @@ locCont	ServerConfig::parseLocation(std::ifstream &in, std::string &line,
 			}
 		}
 	}
+
 	return (newLoc);
 }
 

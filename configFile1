@@ -5,22 +5,15 @@ server   {
 
 	server_name localhost;
 	location / {
-		allow GET PUT q;
+		allow GET PUT POST;
 		autoindex on;
 		index index.html;
+		alias ./testers/1
 		cgi ./helloo;
 		cgi_extension .cprog;
+		max_body_size 5;
 	}
 
-	location /  {
-		index index2.html;
-		allow GET;
-		autoindex on;
-		root /Users/rlando/Desktop/musor_a_ne_proect;
-		max_body_size 55;
-		cgi ./;
-		cgi_extension .cprog;
-	}
 	location /nginx_test  {
 		allow GET;
 		autoindex on;

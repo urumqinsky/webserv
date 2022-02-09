@@ -35,6 +35,11 @@ enum chunkStatus {
 	END
 };
 
+enum bodySource {
+	STR,
+	FD
+};
+
 class Request {
 public:
 	Request(std::string Server);//to discuss
@@ -54,12 +59,13 @@ public:
 	friend void parseHeader(Request &other);
 	friend void parseBody(Request &other);
 	friend void parseChunkedBody(Request &other);
+	friend void writeToFile(Request &other, std::string str);
 	friend void	writeToClientSocket(int i, struct kevent *eventList);
 
 	void createResponce();
 	void createBody();
 	void createErrorBody();
-	// friend void checkRequest(Request &other);
+	friend bool checkRequest(Request &other);
 	friend std::string searchIndexFile(Request &other);
 	friend void autoindexOn(Request &other);
 	friend locCont *findLocation(Request &other);
@@ -68,14 +74,17 @@ public:
 	bool checkIfCgi();
 	void cgiHandler();
 
+	void getPostMethod ();
+	// void postMethod ();
 	void putMethod ();
+	void deleteMethod ();
 	
 	void setClientIpPort(const lIpPort &other);
 	void makeRequestDefault();
 
-	// const std::string &getServerName() const;
 
 protected:
+	static unsigned long long requestNumber;
 	std::string method;
 	std::string path;
 	std::string http;
@@ -102,20 +111,23 @@ private:
 	Request(const Request &other);
 	Request	&operator=(const Request &other);
 
-	std::string body;
 	std::string buf;
 	int errorCode;
 
 
 	Status	status;
+	std::string body;
 	chunkStatus	chunkStatus;
-	size_t chunkSize;
+	bodySource bodySource;
+
+	size_t tmpBodySize;
+	size_t chunkedBodySize;
 
 	std::string responce;
 	std::string respBody;
 
 	std::string serverName;
-	int respCode;
+	// int respCode;
 
 	std::map<int, std::string> allErrorCodes;
 

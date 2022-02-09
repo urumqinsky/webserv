@@ -21,6 +21,20 @@ std::string Request::getQueryString() {
 	}
 }
 
+// GET PATH INFO
+std::string Request::getPathInfo() {
+	std::string res;
+	size_t pos = this->path.find(getScriptName());
+	if (pos != std::string::npos) {
+		res = path.substr(pos, path.size());
+		pos = res.find("/");
+        if (pos != std::string::npos) {
+            return res.substr(pos, res.size());;
+        }
+	}
+	return "";
+}
+
 // GET CONTENT_LENGTH
 std::string Request::getContentLenght() {
 	std::map<std::string, std::string>::iterator it = this->headers.find("CONTENT_LENGTH");
@@ -31,6 +45,7 @@ std::string Request::getContentLenght() {
 	}
 }
 
+// GET CONTENT TYPE
 std::string Request::getContentType() {
 	std::map<std::string, std::string>::iterator it = this->headers.find("CONTENT_TYPE");
 	if (it != this->headers.end()) {
@@ -66,7 +81,6 @@ std::string Request::getClientIp() {
 std::string Request::getClientPort() {
 	return integerToString(this->clientIpPort.port);
 }
-	
 
 // MAIN FUNCTION FOR HANDLING CGI
 void	Request::cgiHandler()
@@ -89,7 +103,7 @@ void	Request::cgiHandler()
 	// REQUEST ENV 
 	env[i++] = strdup(("CONTENT_LENGTH=" + getContentLenght()).c_str());
 	env[i++] = strdup(("CONTENT_TYPE=" + getContentType()).c_str());
-	env[i++] = strdup("PATH_INFO=");
+	env[i++] = strdup(("PATH_INFO=" + getPathInfo()).c_str());
 	env[i++] = strdup(("QUERY_STRING=" + getQueryString()).c_str());
 	env[i++] = strdup(("REMOTE_ADDR=" + getClientIp()).c_str());
 	env[i++] = strdup(("REMOTE_HOST=" + getClientPort()).c_str());
@@ -108,6 +122,9 @@ void	Request::cgiHandler()
 		std::cout << env[t] << " " << std::endl;
 	}
 
+	// BODY HANDLER
+	char *argv[2] = {const_cast<char *>(this->fullPath.c_str()), NULL };
+
 	int fd[2]; // fd[0] - read, fd[1] - write
 	if (pipe(fd) == -1) {
 		printError("pipe() error");
@@ -123,7 +140,7 @@ void	Request::cgiHandler()
 		close(fd[1]);
 		std::cout << "hello from child" << std::endl;
 		//find cgi file and put it with full path to execve
-		execve("/Users/rlando/Desktop/cgi.bla", 0, env);
+		execve(argv[0], argv, env);
 		//
 	}
 	close(fd[1]);

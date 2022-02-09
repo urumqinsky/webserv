@@ -279,9 +279,7 @@ void Request::parseFd(std::string req) {
 			this->locConf = &(*(*this->conf->serverList.begin()).locListS.begin());
 			// std::cout << "checkRequest error. Location not found" << "\n";
 		} else {
-			int res = checkIfCgi();
-			std::cout << res << std::endl;
-			if (!this->locConf->cgiPath.empty() && !this->locConf->cgiExtension.empty() && res) {
+			if (!this->locConf->cgiPath.empty() && !this->locConf->cgiExtension.empty() && checkIfCgi()) {
 				cgiHandler();
 				return ;
 			} else if (checkRequest(*this)){
@@ -302,22 +300,21 @@ void Request::parseFd(std::string req) {
 }
 
 bool Request::checkIfCgi() {
-	// std::string tmpCgiPath = this->locConf->cgiPath + this->locConf->cgiExtension;
-	// if (!tmpCgiPath.compare(0, 2, "./")) {
-	// 	tmpCgiPath.erase(0, 1);
-	// }
-	// std::cout << this->path << " " << tmpCgiPath << std::endl;
-	// if (this->aliasPath == tmpCgiPath) {
-	// 	std::string file = this->locConf->genL.root + "/" + this->locConf->cgiPath + this->locConf->cgiExtension;
-	// 	std::ifstream fs;
-	// 	fs.open(file);
-	// 	if (fs.is_open()) {
-	// 		fs.close();
-	// 		return 1;
-	// 	}
-	// }
-	// return 0;
-	return 1;
+	std::string tmpCgiPath = this->locConf->cgiPath + this->locConf->cgiExtension;
+	if (!tmpCgiPath.compare(0, 2, "./")) {
+		tmpCgiPath.erase(0, 1);
+	}
+	std::cout << this->path << " " << tmpCgiPath << std::endl;
+	if (clearFromSlash(this->aliasPath) == clearFromSlash(tmpCgiPath)) {
+		std::string file = this->locConf->genL.root + "/" + this->locConf->cgiPath + this->locConf->cgiExtension;
+		std::ifstream fs;
+		fs.open(file);
+		if (fs.is_open()) {
+			fs.close();
+			return 1;
+		}
+	}
+	return 0;
 }
 
 std::string searchIndexFile(Request &other) {

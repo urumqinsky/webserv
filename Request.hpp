@@ -16,7 +16,7 @@ std::string ifAlias(locCont *locConf, std::string path);
 std::string getHeader(std::string token, std::map<std::string, std::string> &headers);
 template<typename T>
 std::string integerToString(T number);
-// std::string clearFromSlash(std::string str);
+std::string clearFromSlash(std::string str);
 
 enum Status {
 	START_LINE,
@@ -82,6 +82,13 @@ public:
 	void setClientIpPort(const lIpPort &other);
 	void makeRequestDefault();
 
+	std::string getContentLenght();
+	std::string getContentType();
+	std::string getQueryString();
+	std::string getScriptName();
+	std::string getClientIp();
+	std::string getClientPort();
+	std::string getPathInfo();
 
 protected:
 	static unsigned long long requestNumber;
@@ -100,12 +107,7 @@ protected:
 	lIpPort clientIpPort;
 
 	std::string requestLine;
-	std::string getContentLenght();
-	std::string getContentType();
-	std::string getQueryString();
-	std::string getScriptName();
-	std::string getClientIp();
-	std::string getClientPort();
+	std::string scriptName;
 
 private:
 	Request(const Request &other);

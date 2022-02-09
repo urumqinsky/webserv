@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset="UTF-8">
+		<title>CGI</title>
+		<meta content="yes" name="apple-mobile-web-app-capable">
+		<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style">
+		<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui" name="viewport">
+		<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet">
+		<link href="../reveal.js/css/reveal.css" rel="stylesheet">
+		<link rel="stylesheet" href="../reveal.js/css/theme/moon.css" id="theme">
+		<link href="../reveal.js/lib/css/zenburn.css" rel="stylesheet">
+		<script src="http://getfirebug.com/firebug-lite.js#startOpened=false"></script>
+		<script type="text/javascript">document.write('<link rel="stylesheet" href="../reveal.js/css/print/' + ( window.location.search.match(/print-pdf/gi) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">');</script>
+		<link rel="stylesheet" href="../styles/cgi.css">
+		<script src="../reveal.js/js/highlight.js"></script>
+		<script>
+			Reveal.initialize({
+			  plugins: [ RevealHighlight ]
+			});
+		  </script>
+		<link type="Image/x-icon" href="../images/favicon.ico" rel="icon">
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+		<section>
+			<section class="first_section">
+				<h2>Please introduce yourself</h2>
+				<form action="../../../cgi-bin/names/names.py" method="post">
+					<div>
+						<p class="first_form"> Name: <input type="text" name="firstname" value=""><br>
+							Surname:  <input type="text" name="lastname" value=""><br>
+						</p>
+						<input class="btn" type="submit" value="Send">
+					</div>
+				</form>
+			</section>
+		</section>
+
+		<section>
+			<section class="first_section">
+				<h2 style="font-size: 1em;">Text Area</h2>
+				<form action="../../../cgi-bin/textarea/textarea.py" method="POST">
+				   	<p class="second_form">
+						<textarea name="textcontent" cols="40" rows="6">
+						</textarea>
+					</p>
+					<input class="btn" type="submit" value="send" />
+				</form>
+			</section>
+		</section>
+		<section>
+			<section id="truecode">
+				<h2>Code</h2>
+				<div id="" class="listingblock data-line-17">
+					<div class="content">
+						<pre lang="sh" class="highlight true"><code data-trim data-noescape class="sh language-#{language}">while read a
+do
+echo $a
+done</code></pre>
+					</div>
+				</div>
+				<div id="" class="listingblock data-line-24">
+					<div class="content">
+						<pre lang="java" class="highlight true"><code data-trim data-noescape class="java language-#{language}">StreamsConfig config = ...;
+//Здесь устанавливаем всякие опции
+
+Topology topology = new StreamsBuilder()
+//Здесь строим топологию
+....build();</code></pre>
+					</div>
+				</div>
+			</section>
+		</section>
+
+		<section>
+			<section id="truecontact">
+				<p><a href="https://github.com/MalinPolina">daniseed</a></p>
+				<p><a href="https://github.com/obellado">obellado</a></p>
+				<p><a href="https://github.com/rvinnie">rvinnie</a> </p>
+			</section>
+		</section>
+	
+		<section>
+			<section id="trueciao">
+				<h2>Ciao!</h2>
+				<div id="" style="text-align:center;" class="imageblock data-line-35">
+					<div class="content"><a href="./page.html"><img src="../images/bye.gif" alt="mem" width="" height="" style="background:0"/></a>
+					</div>
+				</div>
+			</section>
+		</section>
+
+	</div>
+		</div>
+		<script src="../reveal.js/lib/js/headmin.js"></script>
+		<script src="../reveal.js/js/reveal.js"></script>
+		<script type="text/javascript">
+			function initializeReveal() {
+			// See https://github.com/hakimel/reveal.js#configuration for a full list of configuration options
+			Reveal.initialize({
+				// Display controls in the bottom right corner
+				controls: true,
+				// Display a presentation progress bar
+				progress: true,
+				// Display the page number of the current slide
+				slideNumber: true,
+				// Push each slide change to the browser history
+				history: true,
+				// Enable keyboard shortcuts for navigation
+				keyboard: true,
+				// Enable the slide overview mode
+				overview: true,
+				// Vertical centering of slides
+				center: true,
+				// Enables touch navigation on devices with touch input
+				touch: true,
+				// Loop the presentation
+				loop: false,
+				// Change the presentation direction to be RTL
+				rtl: false,
+				// Turns fragments on and off globally
+				fragments: true,
+				// Flags if the presentation is running in an embedded mode,
+				// i.e. contained within a limited portion of the screen
+				embedded: false,
+				// Number of milliseconds between automatically proceeding to the
+				// next slide, disabled when set to 0, this value can be overwritten
+				// by using a data-autoslide attribute on your slides
+				autoSlide: 0,
+				// Stop auto-sliding after user input
+				autoSlideStoppable: true,
+				// Enable slide navigation via mouse wheel
+				mouseWheel: true,
+				// Hides the address bar on mobile devices
+				hideAddressBar: true,
+				// Opens links in an iframe preview overlay
+				previewLinks: false,
+				// Theme (e.g., beige, blond, default, moon, night, serif, simple, sky, solarized)
+				theme: Reveal.getQueryHash().theme || 'moon',
+				// Transition style (e.g., default, cube, page, concave, zoom, linear, fade, none)
+				transition: Reveal.getQueryHash().transition || 'default',
+				// Transition speed (e.g., default, fast, slow)
+				transitionSpeed: 'default',
+				// Transition style for full page slide backgrounds (e.g., default, none, slide, concave, convex, zoom)
+				backgroundTransition: 'zoom',
+				// Number of slides away from the current that are visible
+				viewDistance: 3,
+				// Parallax background image (e.g., "'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg'")
+				parallaxBackgroundImage: '',
+				// Parallax background size in CSS syntax (e.g., "2100px 900px")
+				parallaxBackgroundSize: '',
+				// Optional libraries used to extend on reveal.js
+				dependencies: [
+				{
+					src: '../reveal.js/lib/js/classList.js',
+					condition: function () { return !document.body.classList; }
+				},
+				{ src: '../#{revealjsdir}/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+				{
+					src: '../reveal.js/plugin/zoom-js/zoom.js',
+					async: true,
+					condition: function () { return !!document.body.classList; }
+				},
+				{
+					src: '../reveal.js/plugin/notes/notes.js',
+					async: true,
+					condition: function () { return !!document.body.classList; }
+				}
+				]
+			});
+			}
+			initializeReveal();
+		</script>
+	</body>
+</html>

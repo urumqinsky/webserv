@@ -350,15 +350,20 @@ void Request::parseFd(std::string req) {
 }
 
 bool Request::checkIfCgi() {
-	// std::string tmpCgiPath = this->locConf->cgiPath + this->locConf->cgiExtension;
-	// if (!tmpCgiPath.compare(0, 2, "./")) {
-	// 	tmpCgiPath.erase(0, 1);
-	// }
-	// std::cout << this->aliasPath << " --- " << (this->locConf->alias + tmpCgiPath) << std::endl;
-	// if (clearFromSlash(this->aliasPath) == clearFromSlash(this->locConf->alias + tmpCgiPath)) {
+	std::string tmpCgiPath = this->locConf->cgiPath + this->locConf->cgiExtension;
+	if (!tmpCgiPath.compare(0, 2, "./")) {
+		tmpCgiPath.erase(0, 1);
+	}
+	if (!this->locConf->alias.empty()) {
+		tmpCgiPath = this->locConf->alias + tmpCgiPath;
+	} else {
+		tmpCgiPath = this->path + tmpCgiPath;
+	}
+	std::cout << this->aliasPath << " --- " << tmpCgiPath << std::endl;
+	if (clearFromSlash(this->aliasPath) == clearFromSlash(tmpCgiPath)) {
 		return 1;
-	// }
-	// return 0;
+	}
+	return 0;
 }
 
 std::string searchIndexFile(Request &other) {

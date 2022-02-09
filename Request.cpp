@@ -61,9 +61,8 @@ void parseStartLine(Request &other) {
 	other.requestLine = other.buf.substr(0, other.buf.find("\r\n"));
 	
 	if (other.requestLine.empty()) {
-		other.status = ERROR;
-		other.errorCode = 404;
 		other.buf.erase(0, 2);
+		other.status = MOVE_ON;
 		return ;
 	} else {
 		char *tmp2 = new char[other.requestLine.length() + 1];
@@ -90,6 +89,7 @@ void parseStartLine(Request &other) {
 			other.status = ERROR;
 			other.errorCode = 501;
 			other.buf.erase();
+			return ;
 		} else if (other.http.empty()) { // path is missing
 			other.errorCode = 400;
 			other.status = ERROR;
@@ -179,7 +179,6 @@ void parseChunkedBody(Request &other) {
 			if (other.chunkedBodySize == 0)
 				other.chunkedBodySize = other.body.size();
 			other.buf.erase(0, 2);
-			// std::cout << "body " << other.body << '\n';
 		}
 		str = other.buf.substr(0, lineEnd);
 		other.buf.erase(0, lineEnd + 2);
@@ -211,22 +210,11 @@ void parseBody(Request &other) { // check body for terminal
 		other.status = COMPLETED;
 	}
 	other.buf.erase();
-
-	// if (other.body.empty()) {
-	// 	size_t lineEnd = other.buf.find("\r\n");
-	// 	other.body.assign(other.buf, 0, lineEnd);
-	// 	other.buf.erase(0, lineEnd + 2);
-	// } 
-	if ((other.method == "POST" || other.method == "PUT") && other.body.empty()) {
+	if ((other.method == "POST") && other.body.empty()) {
 		other.status = ERROR;
 		other.errorCode = 400;
 		other.buf.erase();
 	}
-	// if (!other.body.empty() && other.buf.find("\r\n") != std::string::npos) {
-	// 	other.buf.erase();
-	// 	other.status = COMPLETED;
-	// }
-
 }
 
 bool checkRequest(Request &other) {
@@ -276,9 +264,7 @@ void Request::parseFd(std::string req) {
 		if((this->locConf = findLocation(*this)) == NULL) {
 			this->locConf = &(*(*this->conf->serverList.begin()).locListS.begin());
 			std::cout << "checkRequest error. Location not found" << "\n";
-		} else if (this->status != ERROR){
-			// int res = checkIfCgi();
-			// std::cout << res << std::endl;
+		} else if (this->status != ERROR) {
 			if (!this->locConf->cgiPath.empty() && !this->locConf->cgiExtension.empty() && checkIfCgi()) {
 				std::cout << "good cgi\n";
 				cgiHandler();
@@ -286,7 +272,6 @@ void Request::parseFd(std::string req) {
 				std::ofstream test("xyz2", std::ios::app);
 				test << this->responce << "\n";
 				test.close();
-				// std::cout << this->responce << std::endl;
 				return ;
 			} else if (checkRequest(*this)) {
 				if (this->locConf->authorization == "on")
@@ -352,11 +337,9 @@ void Request::parseFd(std::string req) {
 		if (this->status == ERROR)
 			createErrorBody();
 		createResponce();
+	} else if (this->status == MOVE_ON) {
+		this->status = COMPLETED;
 	}
-/////////////////////////////PRINT_RESPONCE
-	// std::cout << this->responce << std::endl;
-	// sleep (10);
-
 }
 
 bool Request::checkIfCgi() {
@@ -364,7 +347,6 @@ bool Request::checkIfCgi() {
 	if (!tmpCgiPath.compare(0, 2, "./")) {
 		tmpCgiPath.erase(0, 1);
 	}
-	// std::cout << this->aliasPath << " --- " << (this->locConf->alias + tmpCgiPath) << std::endl;
 	if (clearFromSlash(this->aliasPath) == clearFromSlash(this->locConf->alias + tmpCgiPath)) {
 		return 1;
 	}
@@ -376,7 +358,6 @@ std::string searchIndexFile(Request &other) {
 	std::vector<std::string>::iterator it_end = other.locConf->genL.index.end();
 	std::string indexFile;
 	while (it_begin != it_end) {
-		// indexFile = readFromFile(other.locConf->genL.root + "/" + other.aliasPath + "/" + (*it_begin));
 		indexFile = readFromFile(other.fullPath + "/" + (*it_begin));
 		if (!indexFile.empty()) {
 			return indexFile;
@@ -392,7 +373,6 @@ void autoindexOn(Request &other) {
 	struct dirent *file;
 	std::string indexResponce;
 	std::ifstream fs;
-	// std::string dirName = other.locConf->genL.root + other.path;
 	std::string dirName = other.fullPath;
 
 	if ((dir = opendir(dirName.c_str())) != NULL) {
@@ -426,21 +406,10 @@ void Request::deleteMethod () {
 }
 
 
-void Request::putMethod () {
-	std::ofstream file;
-	file.open(this->fullPath);
-	file << this->body << std::endl;
-	file.close();
-}
-
 void Request::getPostMethod () {
 	std::string indexFile;
 	std::string tmp = readFromFile(this->fullPath);
-
-	// std::string tmp = "<html><head><title></title></head><body><p><img src=\"" + this->fullPath + "\" alt=\"lalal\"></p></body></html>\r\n";
-	
 	if (!tmp.empty()) {
-		// show file:
 		this->respBody = tmp;
 		return ;
 	} else if (!this->locConf->genL.index.empty()) {
@@ -456,44 +425,20 @@ void Request::getPostMethod () {
 	}
 }
 
-void Request::createBody() { // devide into methods GET HEAD POST PUT DELETE
+void Request::createBody() {
 
 	if (this->method == "GET" || (this->method == "POST" && this->cookie.empty())) {
 		getPostMethod();
 		return ;
 	}
-	// if (this->method == "POST") {
-	// 	postMethod();
-	// 	return ;
-	// }
-	if (this->method == "PUT") {
-		putMethod();
-		return ;
-	}
-	if (this->method == "DELETE") {
+	else if (this->method == "DELETE") {
 		deleteMethod();
 		return ;
+	} else {
+		this->status = ERROR;
+		this->errorCode = 501;
 	}
-	// std::string indexFile;
-	// std::string tmp = readFromFile(this->fullPath);
-	
-	// // std::string tmp = "<html><head><title></title></head><body><p><img src=\"" + this->fullPath + "\" alt=\"lalal\"></p></body></html>\r\n";
-	
-	// if (!tmp.empty()) {
-	// 	// show file:
-	// 	this->respBody = tmp;
-	// 	return ;
-	// } else if (!this->locConf->genL.index.empty()) {
-	// 	indexFile = searchIndexFile(*this);
-	// }
-	// if (!indexFile.empty()){
-	// 	this->respBody = indexFile;
-	// } else if (this->locConf->genL.autoindex == 1) {
-	// 		autoindexOn(*this);
-	// } else {
-	// 	this->status = ERROR;
-	// 	this->errorCode = 404;
-	// }
+
 
 }
 
@@ -503,7 +448,6 @@ void Request::createErrorBody() {
 		this->respBody = readFromFile(errorFile);
 		return ;
 	}
-	// this->respBody = "<html><head><title></title></head><body><p>ERROR PAGE IS NOT FOUND</p></body></html>\r\n";
 }
 
 

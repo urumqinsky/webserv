@@ -26,7 +26,9 @@ enum Status {
 	CHUNKED_BODY,
 	COMPLETED,
 	TO_WRITE,
-	ERROR
+	ERROR,
+	MOVE_ON
+
 };
 
 enum chunkStatus {
@@ -76,7 +78,7 @@ public:
 
 	void getPostMethod ();
 	// void postMethod ();
-	void putMethod ();
+	// void putMethod ();
 	void deleteMethod ();
 	
 	void setClientIpPort(const lIpPort &other);

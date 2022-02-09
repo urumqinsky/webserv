@@ -272,6 +272,13 @@ void Request::parseFd(std::string req) {
 	// if (this->body != "")
 	// 	std::cout << this->body << std::endl;
 /////////////////////////////PRINT_END
+
+
+//////////////////////////////////////
+// 
+//////////////////////////////////////
+
+
 	if (this->status == COMPLETED || this->status == ERROR) {
 		if((this->locConf = findLocation(*this)) == NULL) {
 			this->locConf = &(*(*this->conf->serverList.begin()).locListS.begin());
@@ -360,15 +367,15 @@ void Request::parseFd(std::string req) {
 }
 
 bool Request::checkIfCgi() {
-	std::string tmpCgiPath = this->locConf->cgiPath + this->locConf->cgiExtension;
-	if (!tmpCgiPath.compare(0, 2, "./")) {
-		tmpCgiPath.erase(0, 1);
-	}
+	// std::string tmpCgiPath = this->locConf->cgiPath + this->locConf->cgiExtension;
+	// if (!tmpCgiPath.compare(0, 2, "./")) {
+	// 	tmpCgiPath.erase(0, 1);
+	// }
 	// std::cout << this->aliasPath << " --- " << (this->locConf->alias + tmpCgiPath) << std::endl;
-	if (clearFromSlash(this->aliasPath) == clearFromSlash(this->locConf->alias + tmpCgiPath)) {
+	// if (clearFromSlash(this->aliasPath) == clearFromSlash(this->locConf->alias + tmpCgiPath)) {
 		return 1;
-	}
-	return 0;
+	// }
+	// return 0;
 }
 
 std::string searchIndexFile(Request &other) {

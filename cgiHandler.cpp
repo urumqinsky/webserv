@@ -55,43 +55,29 @@ std::string Request::getContentType() {
 	}
 }
 
-// TMP FUNCTION FOR PRINTING HEADERS
-void printHeaders(std::map <std::string, std::string> &headers) {
-	std::map<std::string, std::string>::iterator it = headers.begin();
-	std::map<std::string, std::string>::iterator it2 = headers.end();
-	for (; it != it2; ++it) {
-		std::cout << it->first << " == " << it->second << std::endl;
-	}
-	it = headers.begin();
-	// std::cout << "================================\n";
-	for (; it != it2; it++) {
-		// std::cout << it->first << " == " << it->second << std::endl;
-	}
-}
-
 // GET SCRIPT NAME
 std::string Request::getScriptName() {
 	return this->locConf->cgiPath + this->locConf->cgiExtension;
 }
 
+// GET CLIENT IP
 std::string Request::getClientIp() {
 	return this->clientIpPort.ip;
 }
 
+// GET CLIENT POR
 std::string Request::getClientPort() {
 	return integerToString(this->clientIpPort.port);
 }
 
 // MAIN FUNCTION FOR HANDLING CGI
-void	Request::cgiHandler()
-{
-	// std::cout << ENVNUMS + headers.size() + 1 << std::endl;
-	// const char *env[ENVNUMS + headers.size()];
-	char **env = new char *[ENVNUMS + headers.size()];
-	int i(0);
+void	Request::cgiHandler() {
 
-	// std::cout << this->locConf->cgiPath + this->locConf->cgiExtension << std::endl;
-	// printHeaders(headers);
+	std::cout << "HELLO" << std::endl;
+
+	char **env = new char *[ENVNUMS + headers.size()];
+	env[ENVNUMS + headers.size()] = NULL;
+	int i(0);
 	
 	// SERVER ENV
 	env[i++] = strdup("GATEWAY_INTERFACE=CGI/1.1");
@@ -116,24 +102,13 @@ void	Request::cgiHandler()
 	for (std::map<std::string, std::string>::iterator it = headers.begin(); it != it2; ++it) {
 		env[i++] = strdup(("HTTP_" + it->first + "=" + it->second).c_str());
 	}
-	env[ENVNUMS + headers.size()] = NULL;
 
-	for (unsigned int t = 0; t < (ENVNUMS + headers.size()); t++) {
-		// std::cout << env[t] << " " << std::endl;
-	}
-	
-	// BODY HANDLER
 	int bodyFileFd;
-
 	char *argv[2] = {const_cast<char *>(this->fullPath.c_str()), NULL };
 
-	// int fd[2]; // fd[0] - read, fd[1] - write
-	// if (pipe(fd) == -1) {
-	// 	printError("pipe() error");
-	// }
 	FILE	*outFile = tmpfile();
 	FILE	*inFile = tmpfile();
-	
+
 	long	fdOut = fileno(outFile);
 	long	fdIn = fileno(inFile);
 	if (this->bodySource == STR) {
@@ -148,7 +123,6 @@ void	Request::cgiHandler()
 		printError("fork() error");
 	}
 	if (pid == 0) {
-		// std::cout << "hello from child" << std::endl;
 		dup2(fdOut, STDOUT_FILENO);
 		if (this->bodySource == FD) {
 			dup2(bodyFileFd, STDIN_FILENO);
@@ -158,9 +132,7 @@ void	Request::cgiHandler()
 			close(fdIn);
 		}
 		close(fdOut);
-		//find cgi file and put it with full path to execve
 		execve(argv[0], argv, env);
-		//
 	}
 	// waitpid(pid, 0, 0);
 	if (this->bodySource == FD) {
@@ -176,7 +148,5 @@ void	Request::cgiHandler()
 		this->respBody += buf;
 	}
 	close(fdOut);
-	// std::cout << this->respBody << std::endl;
-	// this->responce = std::string(buf);
 	this->status = COMPLETED;
 }

@@ -61,7 +61,6 @@ locCont *findLocation(Request &other) {
                     if (!S_ISREG(buf.st_mode) && !S_ISDIR(buf.st_mode) && other.method != "PUT") {
                         other.status = ERROR;
                         other.errorCode = 404;
-                        // return tmp; 
                     }
                     return &(*it_begin);
                 }

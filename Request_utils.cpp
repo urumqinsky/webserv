@@ -55,6 +55,7 @@ locCont *findLocation(Request &other) {
                     if (std::count((*it_begin).methods.begin(), (*it_begin).methods.end(), other.method) == 0) {
                         other.status = ERROR;
                         other.errorCode = 405;
+                        return tmp; 
                     }
                     other.aliasPath = ifAlias(&(*it_begin), other.pathConfCheck) + appndx;
                     other.fullPath = (*it_begin).genL.root + "/" + other.aliasPath;
@@ -65,8 +66,6 @@ locCont *findLocation(Request &other) {
                     // std::cout << S_ISREG(buf.st_mode) << "\n";
                     // std::cout << S_ISDIR(buf.st_mode) << "\n";
                     if (!S_ISREG(buf.st_mode) && !S_ISDIR(buf.st_mode) && other.method != "PUT") {
-                    // if (!S_ISREG(buf.st_mode) && !S_ISDIR(buf.st_mode)) {
-                        // std::cout << "<+++++++++++++" << "\n";
                         other.status = ERROR;
                         other.errorCode = 404;
                         return tmp; 

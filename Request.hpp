@@ -75,6 +75,7 @@ public:
 	void getPostMethod ();
 	// void postMethod ();
 	void putMethod ();
+	void deleteMethod ();
 	
 	void setClientIpPort(const lIpPort &other);
 	void makeRequestDefault();

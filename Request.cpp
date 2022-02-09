@@ -339,6 +339,19 @@ void autoindexOn(Request &other) {
 
 }
 
+void Request::deleteMethod () {
+	std::fstream file;
+	file.open(this->fullPath);
+	if (file.is_open()) {
+		file.close();
+		std::remove(this->fullPath.c_str());
+	} else {
+		this->status = ERROR;
+		this->errorCode = 404;
+	}
+}
+
+
 void Request::putMethod () {
 	std::ofstream file;
 	file.open(this->fullPath);
@@ -394,27 +407,30 @@ void Request::createBody() { // devide into methods GET HEAD POST PUT DELETE
 		putMethod();
 		return ;
 	}
-
-	std::string indexFile;
-	std::string tmp = readFromFile(this->fullPath);
-	
-	// std::string tmp = "<html><head><title></title></head><body><p><img src=\"" + this->fullPath + "\" alt=\"lalal\"></p></body></html>\r\n";
-	
-	if (!tmp.empty()) {
-		// show file:
-		this->respBody = tmp;
+	if (this->method == "DELETE") {
+		deleteMethod();
 		return ;
-	} else if (!this->locConf->genL.index.empty()) {
-		indexFile = searchIndexFile(*this);
 	}
-	if (!indexFile.empty()){
-		this->respBody = indexFile;
-	} else if (this->locConf->genL.autoindex == 1) {
-			autoindexOn(*this);
-	} else {
-		this->status = ERROR;
-		this->errorCode = 404;
-	}
+	// std::string indexFile;
+	// std::string tmp = readFromFile(this->fullPath);
+	
+	// // std::string tmp = "<html><head><title></title></head><body><p><img src=\"" + this->fullPath + "\" alt=\"lalal\"></p></body></html>\r\n";
+	
+	// if (!tmp.empty()) {
+	// 	// show file:
+	// 	this->respBody = tmp;
+	// 	return ;
+	// } else if (!this->locConf->genL.index.empty()) {
+	// 	indexFile = searchIndexFile(*this);
+	// }
+	// if (!indexFile.empty()){
+	// 	this->respBody = indexFile;
+	// } else if (this->locConf->genL.autoindex == 1) {
+	// 		autoindexOn(*this);
+	// } else {
+	// 	this->status = ERROR;
+	// 	this->errorCode = 404;
+	// }
 
 }
 

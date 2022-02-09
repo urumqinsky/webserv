@@ -11,6 +11,7 @@ server   {
 		alias ./testers/1
 		cgi ./helloo;
 		cgi_extension .cprog;
+		max_body_size 5;
 	}
 
 	location /nginx_test  {

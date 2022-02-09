@@ -19,11 +19,6 @@ std::string ifAlias(locCont *locConf, std::string path) {
     if (locConf->alias.empty()) {
         return path;
     } else {
-        // std::string tmp = locConf->alias;
-        // if (!tmp.compare(0, 2, "./")) {
-        //     tmp.erase(0, 1);
-        // }
-        // return tmp;
         return locConf->alias;
     }
 }
@@ -32,8 +27,6 @@ std::string clearFromSlash(std::string str) {
     while(str.find("/") == 0) {
         str.erase(0,1);
     }
-
-    // std::cout << str << "\n" << str.rfind("/") << " ======= " << str.size() << "    " << str.length() << std::endl;
     while (!str.empty() && str.rfind("/") == str.length() - 1) {
         str.pop_back();
     }

@@ -63,7 +63,7 @@ public:
 	void createResponce();
 	void createBody();
 	void createErrorBody();
-	// friend void checkRequest(Request &other);
+	friend bool checkRequest(Request &other);
 	friend std::string searchIndexFile(Request &other);
 	friend void autoindexOn(Request &other);
 	friend locCont *findLocation(Request &other);
@@ -111,12 +111,13 @@ private:
 	bodySource bodySource;
 
 	size_t tmpBodySize;
+	size_t chunkedBodySize;
 
 	std::string responce;
 	std::string respBody;
 
 	std::string serverName;
-	int respCode;
+	// int respCode;
 
 	std::map<int, std::string> allErrorCodes;
 

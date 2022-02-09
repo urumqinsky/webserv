@@ -39,6 +39,12 @@ void Request::makeRequestDefault() {
 	this->body.erase();
 	this->responce.erase();
 	this->respBody.erase();
+	this->aliasPath.erase();
+	this->fullPath.erase();
+	this->pathConfCheck.erase();
+	this->tmpBodySize = 0;
+	this->chunkedBodySize = 0;
+	this->serverName.erase();
 
 }
 
@@ -85,7 +91,7 @@ void parseStartLine(Request &other) {
 			other.errorCode = 501;
 			other.buf.erase();
 		} else if (other.http.empty()) { // path is missing
-			other.errorCode = 501; //to check
+			other.errorCode = 400;
 			other.status = ERROR;
 			other.buf.erase();
 		} else if (other.http != "HTTP/1.1") {
@@ -134,7 +140,6 @@ void parseHeader(Request &other) {
 			return ;
 		}
 		std::string contLength = getHeader("CONTENT_LENGTH", other.headers);
-		// } else if (atoi(getHeader("CONTENT-LENGHT", other.headers).c_str()) > 0) {
 		size_t bodySize = atoi(contLength.c_str());
 		if (!contLength.empty() && bodySize > 0) {
 			other.tmpBodySize = bodySize;
@@ -154,14 +159,14 @@ void writeToFile(Request &other, std::string str) {
 	std::fstream fs;
 	fs.open(fileName, std::fstream::app);
 	if (other.bodySource == STR) {
-		fs.write(other.body.c_str(), other.body.size());
+		other.chunkedBodySize = other.body.size();
+		fs.write(other.body.c_str(), other.chunkedBodySize);
 		other.body = fileName;
 		other.bodySource = FD;
 	}
+	other.chunkedBodySize += str.size();
 	fs.write(str.c_str(), str.size());
 	fs.close();
-
-
 }
 
 void parseChunkedBody(Request &other) {
@@ -170,6 +175,8 @@ void parseChunkedBody(Request &other) {
 	while (other.status == CHUNKED_BODY && (lineEnd = other.buf.find("\r\n")) != std::string::npos) {
 		if (other.chunkStatus == END && other.buf == "\r\n") {
 			other.status = COMPLETED;
+			if (other.chunkedBodySize == 0)
+				other.chunkedBodySize = other.body.size();
 			other.buf.erase(0, 2);
 			// std::cout << "body " << other.body << '\n';
 		}
@@ -222,6 +229,17 @@ void parseBody(Request &other) { // check body for terminal
 
 }
 
+bool checkRequest(Request &other) {
+	size_t maxBodySize = other.locConf->genL.bodySizeMax;
+	if (maxBodySize != 0 && (other.tmpBodySize > maxBodySize || other.chunkedBodySize > maxBodySize)) {
+		other.status = ERROR;
+		other.errorCode = 413;
+		other.buf.erase();
+		return 0;	
+	}
+	return 1;
+}
+
 
 void Request::parseFd(std::string req) {
 	this->buf += req;
@@ -262,7 +280,7 @@ void Request::parseFd(std::string req) {
 			if (!this->locConf->cgiPath.empty() && !this->locConf->cgiExtension.empty() && checkIfCgi()) {
 				cgiHandler();
 				return ;
-			} else {
+			} else if (checkRequest(*this)){
 				// if (allowed())
 					createBody();
 				// else {}

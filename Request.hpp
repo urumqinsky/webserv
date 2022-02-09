@@ -67,7 +67,7 @@ public:
 	void cgiHandler();
 
 	void putMethod ();
-	
+
 	void setClientIpPort(const lIpPort &other);
 	void makeRequestDefault();
 protected:
@@ -78,6 +78,7 @@ protected:
 	std::string fullPath; //with root
 	std::string pathConfCheck;
 	std::map <std::string, std::string> headers;
+	std::string cookie;
 
 	htCont *conf;
 	locCont *locConf;

@@ -20,8 +20,6 @@ int		main(int argc, char *argv[])
 	int nPorts = sConfig.getListenIpPorts().size();
 	std::vector<lIpPort> listenIpPorts = sConfig.getListenIpPorts();
 
-	// for (size_t i = 0; i < listenIpPorts.size(); i++)
-	// 	std::cout << "ip:port = " << listenIpPorts[i].ip << ":" << listenIpPorts[i].port << '\n';
 	ServerSocket	servSockets[nPorts];
 
 	for (int i = 0; i < nPorts; i++)

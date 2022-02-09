@@ -63,9 +63,9 @@ void printHeaders(std::map <std::string, std::string> &headers) {
 		std::cout << it->first << " == " << it->second << std::endl;
 	}
 	it = headers.begin();
-	std::cout << "================================\n";
+	// std::cout << "================================\n";
 	for (; it != it2; it++) {
-		std::cout << it->first << " == " << it->second << std::endl;
+		// std::cout << it->first << " == " << it->second << std::endl;
 	}
 }
 
@@ -85,12 +85,12 @@ std::string Request::getClientPort() {
 // MAIN FUNCTION FOR HANDLING CGI
 void	Request::cgiHandler()
 {
-	std::cout << ENVNUMS + headers.size() + 1 << std::endl;
+	// std::cout << ENVNUMS + headers.size() + 1 << std::endl;
 	// const char *env[ENVNUMS + headers.size()];
 	char **env = new char *[ENVNUMS + headers.size()];
 	int i(0);
 
-	std::cout << this->locConf->cgiPath + this->locConf->cgiExtension << std::endl;
+	// std::cout << this->locConf->cgiPath + this->locConf->cgiExtension << std::endl;
 	// printHeaders(headers);
 	
 	// SERVER ENV
@@ -119,15 +119,29 @@ void	Request::cgiHandler()
 	env[ENVNUMS + headers.size()] = NULL;
 
 	for (unsigned int t = 0; t < (ENVNUMS + headers.size()); t++) {
-		std::cout << env[t] << " " << std::endl;
+		// std::cout << env[t] << " " << std::endl;
 	}
-
+	
 	// BODY HANDLER
+	int bodyFileFd;
+
 	char *argv[2] = {const_cast<char *>(this->fullPath.c_str()), NULL };
 
-	int fd[2]; // fd[0] - read, fd[1] - write
-	if (pipe(fd) == -1) {
-		printError("pipe() error");
+	// int fd[2]; // fd[0] - read, fd[1] - write
+	// if (pipe(fd) == -1) {
+	// 	printError("pipe() error");
+	// }
+	FILE	*outFile = tmpfile();
+	FILE	*inFile = tmpfile();
+	
+	long	fdOut = fileno(outFile);
+	long	fdIn = fileno(inFile);
+	if (this->bodySource == STR) {
+		write(fdIn, this->body.c_str(), this->body.size());
+		// close(fdIn);
+		// fdIn = fileno(inFile);
+	} else {
+		bodyFileFd = open(this->body.c_str(), O_RDONLY);
 	}
 	int pid = fork();
 	if (pid < 0) {
@@ -135,22 +149,33 @@ void	Request::cgiHandler()
 	}
 	if (pid == 0) {
 		// std::cout << "hello from child" << std::endl;
-		dup2(fd[1], STDOUT_FILENO);
-		close(fd[0]);
-		close(fd[1]);
+		dup2(fdOut, STDOUT_FILENO);
+		if (this->bodySource == FD) {
+			dup2(bodyFileFd, STDIN_FILENO);
+			close(bodyFileFd);
+		} else {
+			dup2(fdIn, STDIN_FILENO);
+			close(fdIn);
+		}
+		close(fdOut);
 		//find cgi file and put it with full path to execve
 		execve(argv[0], argv, env);
 		//
 	}
-	close(fd[1]);
-	char buf[200];
+	// waitpid(pid, 0, 0);
+	if (this->bodySource == FD) {
+		close(bodyFileFd);
+	} else {
+		close(fdIn);
+	}
+	char buf[10000];
 	int count = 1;
 	while (count > 0) {
-		memset(buf, 0, 200);
-		count = read(fd[0], buf, 200);
+		memset(buf, 0, 10000);
+		count = read(fdOut, buf, 10000);
 		this->respBody += buf;
 	}
-	close(fd[0]);
+	close(fdOut);
 	// std::cout << this->respBody << std::endl;
 	// this->responce = std::string(buf);
 	this->status = COMPLETED;

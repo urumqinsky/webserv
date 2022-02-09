@@ -276,14 +276,17 @@ void Request::parseFd(std::string req) {
 		if((this->locConf = findLocation(*this)) == NULL) {
 			this->locConf = &(*(*this->conf->serverList.begin()).locListS.begin());
 			std::cout << "checkRequest error. Location not found" << "\n";
-		} else {
-			int res = checkIfCgi();
-			std::cout << res << std::endl;
+		} else if (this->status != ERROR){
+			// int res = checkIfCgi();
+			// std::cout << res << std::endl;
 			if (!this->locConf->cgiPath.empty() && !this->locConf->cgiExtension.empty() && checkIfCgi()) {
 				std::cout << "good cgi\n";
 				cgiHandler();
 				createResponce();
-				std::cout << this->responce << std::endl;
+				std::ofstream test("xyz2", std::ios::app);
+				test << this->responce << "\n";
+				test.close();
+				// std::cout << this->responce << std::endl;
 				return ;
 			} else if (checkRequest(*this)) {
 				if (this->locConf->authorization == "on")
@@ -361,15 +364,9 @@ bool Request::checkIfCgi() {
 	if (!tmpCgiPath.compare(0, 2, "./")) {
 		tmpCgiPath.erase(0, 1);
 	}
-	std::cout << this->aliasPath << " --- " << tmpCgiPath << std::endl;
-	if (clearFromSlash(this->aliasPath) == clearFromSlash(tmpCgiPath)) {
-		// std::string file = this->locConf->genL.root + "/" + this->locConf->cgiPath + this->locConf->cgiExtension;
-		// std::ifstream fs;
-		// fs.open(file);
-		// if (fs.is_open()) {
-		// 	fs.close();
-			return 1;
-		// }
+	// std::cout << this->aliasPath << " --- " << (this->locConf->alias + tmpCgiPath) << std::endl;
+	if (clearFromSlash(this->aliasPath) == clearFromSlash(this->locConf->alias + tmpCgiPath)) {
+		return 1;
 	}
 	return 0;
 }

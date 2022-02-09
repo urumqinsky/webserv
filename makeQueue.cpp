@@ -37,7 +37,7 @@ void	acceptNewClient(int kq, int i, struct kevent *eventList, htCont *conf)
 	EV_SET(&evSet[0], newEventFd, EVFILT_READ, EV_ADD, 0, 0, static_cast<void*>(tmp));
 	EV_SET(&evSet[1], newEventFd, EVFILT_WRITE, EV_ADD, 0, 0, static_cast<void*>(tmp));
 	if (kevent(kq, evSet, 2, NULL, 0, NULL) == -1)
-		return (printError("kevent() error"));
+		return (printError("kevent() error 1"));
 }
 
 void	watch_loop(int kq, ServerSocket *sSockets, int nPorts, htCont conf)
@@ -49,7 +49,7 @@ void	watch_loop(int kq, ServerSocket *sSockets, int nPorts, htCont conf)
 	{
 		eventNumber = kevent(kq, NULL, 0, eventList, 1024, NULL);
 		if (eventNumber < 1)
-			return (printError("kevent() error"));
+			return (printError("kevent() error 2"));
 		for (int i = 0; i < eventNumber; i++)
 		{
 			if (compareWithListenSockets(eventList[i].ident, sSockets, nPorts))
@@ -77,6 +77,6 @@ void	makeQueue(ServerSocket *servSockets, int nPorts, ServerConfig &sConfig)
 				EVFILT_READ, EV_ADD, 0, 0, static_cast<void*>(tmp));
 	}
 	if (kevent(kq, changeList, nPorts, NULL, 0, NULL) == -1)
-		return (printError("kevent() error"));
+		return (printError("kevent() error 3"));
 	watch_loop(kq, servSockets, nPorts, sConfig.getHttpCont());
 }

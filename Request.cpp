@@ -12,6 +12,8 @@ Request::Request(htCont *conf, lIpPort *ip) {
 	this->port = ip->port;
 	this->conf = conf;
 	this->serverName = "webserv";
+	this->tmpBodySize = 0;
+	this->chunkedBodySize = 0;
 	setAllErrorCodes();
 }
 
@@ -90,7 +92,7 @@ void parseStartLine(Request &other) {
 			other.errorCode = 501;
 			other.buf.erase();
 			return ;
-		} else if (other.http.empty()) { // path is missing
+		} else if (other.http.empty()) {
 			other.errorCode = 400;
 			other.status = ERROR;
 			other.buf.erase();
@@ -204,7 +206,7 @@ void parseChunkedBody(Request &other) {
 	}
 }
 
-void parseBody(Request &other) { // check body for terminal
+void parseBody(Request &other) {
 	other.body += other.buf.substr(0, other.tmpBodySize - other.body.size());
 	if (other.body.size() >= other.tmpBodySize) {
 		other.status = COMPLETED;
@@ -250,35 +252,15 @@ void Request::parseFd(std::string req) {
 
 		}
 	}
-/////////////////////////////PRINT:
-	// std::cout << this->method << " " << this->path << " " << this->http << std::endl;
-	// std::map<std::string, std::string>::iterator it2 = this->headers.begin();
-	// while (it2 != this->headers.end()) {
-	// 	std::cout << it2->first << ": " << it2->second << std::endl;
-	// 	++it2;
-	// }
-	// if (this->body != "")
-	// 	std::cout << this->body << std::endl;
-/////////////////////////////PRINT_END
-
-
-//////////////////////////////////////
-// 
-//////////////////////////////////////
-
 
 	if (this->status == COMPLETED || this->status == ERROR) {
 		if((this->locConf = findLocation(*this)) == NULL) {
 			this->locConf = &(*(*this->conf->serverList.begin()).locListS.begin());
-			std::cout << "checkRequest error. Location not found" << "\n";
+			// std::cout << "checkRequest error. Location not found" << "\n";
 		} else if (this->status != ERROR) {
 			if (!this->locConf->cgiPath.empty() && !this->locConf->cgiExtension.empty() && checkIfCgi()) {
-				std::cout << "good cgi\n";
 				cgiHandler();
 				createResponce();
-				std::ofstream test("xyz2", std::ios::app);
-				test << this->responce << "\n";
-				test.close();
 				return ;
 			} else if (checkRequest(*this)) {
 				if (this->locConf->authorization == "on")
@@ -354,13 +336,8 @@ bool Request::checkIfCgi() {
 	if (!tmpCgiPath.compare(0, 2, "./")) {
 		tmpCgiPath.erase(0, 1);
 	}
-	// if (!this->locConf->alias.empty()) {
-	// 	tmpCgiPath = this->locConf->alias + tmpCgiPath;
-	// } else {
-	// 	tmpCgiPath = this->path + tmpCgiPath;
-	// }
+
 	std::string toCheck = this->aliasPath.substr(this->aliasPath.rfind("/"));
-	std::cout << toCheck << " --- " << tmpCgiPath << std::endl;
 	if (clearFromSlash(toCheck) == clearFromSlash(tmpCgiPath)) {
 		return 1;
 	}
@@ -402,9 +379,7 @@ void autoindexOn(Request &other) {
 	} else {
 			other.status = ERROR;
 			other.errorCode = 404;
-			std::cout << "autoindex ERROR" << "\n";
 	}
-
 }
 
 void Request::deleteMethod () {
@@ -418,7 +393,6 @@ void Request::deleteMethod () {
 		this->errorCode = 404;
 	}
 }
-
 
 void Request::getPostMethod () {
 	std::string indexFile;
@@ -452,16 +426,16 @@ void Request::createBody() {
 		this->status = ERROR;
 		this->errorCode = 501;
 	}
-
-
 }
 
 void Request::createErrorBody() {
+	std::string errorFile;
 	if (this->locConf && this->locConf->genL.error_page.find(this->errorCode) != this->locConf->genL.error_page.end()) {
-		std::string errorFile = this->locConf->genL.root + this->locConf->genL.error_page.find(this->errorCode)->second;
-		this->respBody = readFromFile(errorFile);
-		return ;
+		errorFile = this->locConf->genL.error_page.find(this->errorCode)->second;
+	} else if (this->locConf && this->locConf->genL.error_page.find(404) != this->locConf->genL.error_page.end()) {
+		errorFile = this->locConf->genL.error_page.find(404)->second;
 	}
+	this->respBody = readFromFile(errorFile);
 }
 
 

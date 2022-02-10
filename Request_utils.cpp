@@ -55,9 +55,9 @@ locCont *findLocation(Request &other) {
                     const char *rootPath = other.fullPath .c_str();
                     stat(rootPath, &buf);
 
-                    std::cout << other.fullPath << "<==========\n";
-                    std::cout << S_ISREG(buf.st_mode) << "\n";
-                    std::cout << S_ISDIR(buf.st_mode) << "\n";
+                    // std::cout << other.fullPath << "<==========\n";
+                    // std::cout << S_ISREG(buf.st_mode) << "\n";
+                    // std::cout << S_ISDIR(buf.st_mode) << "\n";
                     if (!S_ISREG(buf.st_mode) && !S_ISDIR(buf.st_mode) && other.method != "PUT") {
                         other.status = ERROR;
                         other.errorCode = 404;

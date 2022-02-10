@@ -72,81 +72,67 @@ std::string Request::getClientPort() {
 
 // MAIN FUNCTION FOR HANDLING CGI
 void	Request::cgiHandler() {
-
-	std::cout << "HELLO" << std::endl;
-
-	char **env = new char *[ENVNUMS + headers.size()];
-	env[ENVNUMS + headers.size()] = NULL;
-	int i(0);
+	// char **env = new char *[ENVNUMS + headers.size()];
+	// env[ENVNUMS + headers.size()] = NULL;
+	// int i(0);
 	
 	// SERVER ENV
-	env[i++] = strdup("GATEWAY_INTERFACE=CGI/1.1");
-	env[i++] = strdup(("SERVER_NAME=" + getHeader("HOST", this->headers)).c_str());
-	env[i++] = strdup(("SERVER_PORT=" + integerToString(port)).c_str());
-	env[i++] = strdup(("SERVER_PROTOCOL=" + http).c_str());
-	env[i++] = strdup(("SERVER_SOFTWARE=" + std::string("testname")).c_str());
+	// env[i++] = strdup("GATEWAY_INTERFACE=CGI/1.1");
+	// env[i++] = strdup(("SERVER_NAME=" + getHeader("HOST", this->headers)).c_str());
+	// env[i++] = strdup(("SERVER_PORT=" + integerToString(port)).c_str());
+	// env[i++] = strdup(("SERVER_PROTOCOL=" + http).c_str());
+	// env[i++] = strdup(("SERVER_SOFTWARE=" + std::string("testname")).c_str());
 
 	// REQUEST ENV 
-	env[i++] = strdup(("CONTENT_LENGTH=" + getContentLenght()).c_str());
-	env[i++] = strdup(("CONTENT_TYPE=" + getContentType()).c_str());
-	env[i++] = strdup(("PATH_INFO=" + getPathInfo()).c_str());
-	env[i++] = strdup(("QUERY_STRING=" + getQueryString()).c_str());
-	env[i++] = strdup(("REMOTE_ADDR=" + getClientIp()).c_str());
-	env[i++] = strdup(("REMOTE_HOST=" + getClientPort()).c_str());
-	env[i++] = strdup(("REQUEST_METHOD=" + this->method).c_str());
-	env[i++] = strdup(("REQUEST_LINE=" + this->requestLine).c_str());
-	env[i++] = strdup(("SCRIPT_NAME=" + getScriptName()).c_str());
+	// env[i++] = strdup(("CONTENT_LENGTH=" + getContentLenght()).c_str());
+	// env[i++] = strdup(("CONTENT_TYPE=" + getContentType()).c_str());
+	// env[i++] = strdup(("PATH_INFO=" + getPathInfo()).c_str());
+	// env[i++] = strdup(("QUERY_STRING=" + getQueryString()).c_str());
+	// env[i++] = strdup(("REMOTE_ADDR=" + getClientIp()).c_str());
+	// env[i++] = strdup(("REMOTE_HOST=" + getClientPort()).c_str());
+	// env[i++] = strdup(("REQUEST_METHOD=" + this->method).c_str());
+	// env[i++] = strdup(("REQUEST_LINE=" + this->requestLine).c_str());
+	// env[i++] = strdup(("SCRIPT_NAME=" + getScriptName()).c_str());
 
 	// SERVER ENV
-	std::map<std::string, std::string>::iterator it2 = headers.end();
-	for (std::map<std::string, std::string>::iterator it = headers.begin(); it != it2; ++it) {
-		env[i++] = strdup(("HTTP_" + it->first + "=" + it->second).c_str());
-	}
-
-	int bodyFileFd;
+	// std::map<std::string, std::string>::iterator it2 = headers.end();
+	// for (std::map<std::string, std::string>::iterator it = headers.begin(); it != it2; ++it) {
+	// 	env[i++] = strdup(("HTTP_" + it->first + "=" + it->second).c_str());
+	// }
+	// fd[0] - read, fd[1] - write
+	int fd[2];
 	char *argv[2] = {const_cast<char *>(this->fullPath.c_str()), NULL };
-
-	FILE	*outFile = tmpfile();
-	FILE	*inFile = tmpfile();
-
-	long	fdOut = fileno(outFile);
-	long	fdIn = fileno(inFile);
-	if (this->bodySource == STR) {
-		write(fdIn, this->body.c_str(), this->body.size());
-		// close(fdIn);
-		// fdIn = fileno(inFile);
-	} else {
-		bodyFileFd = open(this->body.c_str(), O_RDONLY);
+	if (pipe(fd) == -1) {
+		printError("pipe() error");
 	}
+	if (this->body.empty()) {
+		write(fd[1], "name=default&login=default", 27);
+	} else {
+		write(fd[1], this->body.c_str(), this->body.size());
+	}
+	std::cout << argv[0] << " " << std::endl;
 	int pid = fork();
 	if (pid < 0) {
 		printError("fork() error");
+	} else if (pid == 0) {
+		dup2(fd[0], STDIN_FILENO);
+		dup2(fd[1], STDOUT_FILENO);
+		close(fd[0]);
+		close(fd[1]);
+		int res = execve(argv[0], argv, 0);
+		exit(res);
 	}
-	if (pid == 0) {
-		dup2(fdOut, STDOUT_FILENO);
-		if (this->bodySource == FD) {
-			dup2(bodyFileFd, STDIN_FILENO);
-			close(bodyFileFd);
-		} else {
-			dup2(fdIn, STDIN_FILENO);
-			close(fdIn);
-		}
-		close(fdOut);
-		execve(argv[0], argv, env);
-	}
-	// waitpid(pid, 0, 0);
-	if (this->bodySource == FD) {
-		close(bodyFileFd);
-	} else {
-		close(fdIn);
-	}
+	close(fd[1]);
+	int res;
+	waitpid(-1, &res, 0);
 	char buf[10000];
 	int count = 1;
 	while (count > 0) {
 		memset(buf, 0, 10000);
-		count = read(fdOut, buf, 10000);
+		count = read(fd[0], buf, 10000);
 		this->respBody += buf;
+		std::cout << respBody << " " << count << std::endl;
 	}
-	close(fdOut);
+	close(fd[0]);
 	this->status = COMPLETED;
 }

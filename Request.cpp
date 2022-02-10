@@ -354,13 +354,14 @@ bool Request::checkIfCgi() {
 	if (!tmpCgiPath.compare(0, 2, "./")) {
 		tmpCgiPath.erase(0, 1);
 	}
-	if (!this->locConf->alias.empty()) {
-		tmpCgiPath = this->locConf->alias + tmpCgiPath;
-	} else {
-		tmpCgiPath = this->path + tmpCgiPath;
-	}
-	std::cout << this->aliasPath << " --- " << tmpCgiPath << std::endl;
-	if (clearFromSlash(this->aliasPath) == clearFromSlash(tmpCgiPath)) {
+	// if (!this->locConf->alias.empty()) {
+	// 	tmpCgiPath = this->locConf->alias + tmpCgiPath;
+	// } else {
+	// 	tmpCgiPath = this->path + tmpCgiPath;
+	// }
+	std::string toCheck = this->aliasPath.substr(this->aliasPath.rfind("/"));
+	std::cout << toCheck << " --- " << tmpCgiPath << std::endl;
+	if (clearFromSlash(toCheck) == clearFromSlash(tmpCgiPath)) {
 		return 1;
 	}
 	return 0;

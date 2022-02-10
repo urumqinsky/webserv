@@ -2,6 +2,8 @@
 #include "ServerSocket.hpp"
 #include "Request.hpp"
 #include "functions.hpp"
+#include <cerrno>
+
 
 bool	compareWithListenSockets(unsigned long ident, ServerSocket *sSockets, int nPorts)
 {
@@ -49,7 +51,10 @@ void	watch_loop(int kq, ServerSocket *sSockets, int nPorts, htCont conf)
 	{
 		eventNumber = kevent(kq, NULL, 0, eventList, 1024, NULL);
 		if (eventNumber < 1)
+		{
+			std::cerr << std::strerror(errno) << std::endl;
 			return (printError("kevent() error 2"));
+		}
 		for (int i = 0; i < eventNumber; i++)
 		{
 			if (compareWithListenSockets(eventList[i].ident, sSockets, nPorts))

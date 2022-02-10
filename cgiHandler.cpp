@@ -106,11 +106,12 @@ void	Request::cgiHandler() {
 		printError("pipe() error");
 	}
 	if (this->body.empty()) {
-		write(fd[1], "name=default&login=default", 27);
+		if (write(fd[1], "name=default&login=default", 27) == -1)
+			printError("write() error");
 	} else {
-		write(fd[1], this->body.c_str(), this->body.size());
+		if (write(fd[1], this->body.c_str(), this->body.size()) == -1)
+			printError("write() error");
 	}
-	std::cout << argv[0] << " " << std::endl;
 	int pid = fork();
 	if (pid < 0) {
 		printError("fork() error");
@@ -130,8 +131,9 @@ void	Request::cgiHandler() {
 	while (count > 0) {
 		memset(buf, 0, 10000);
 		count = read(fd[0], buf, 10000);
+		if (count == -1)
+			printError("read() error");
 		this->respBody += buf;
-		std::cout << respBody << " " << count << std::endl;
 	}
 	close(fd[0]);
 	this->status = COMPLETED;

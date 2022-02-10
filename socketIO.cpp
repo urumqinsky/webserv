@@ -6,7 +6,8 @@ std::string recv_msg(int fd, int size)
 
 	char buf[size + 1];
 	bzero(buf, size + 1);
-	recv(fd, buf, size, 0);
+	if (recv(fd, buf, size, 0) == -1)
+		printError("recv() error");
 	std::string str = std::string(buf);
 	return str;
 }
@@ -49,8 +50,12 @@ void	writeToClientSocket(int kq, int i, struct kevent *eventList)
 		deleteEvent(kq, i, eventList);
 	else if (tmp->req->getStatus() == TO_WRITE)
 	{
-		send(eventList[i].ident, tmp->req->getResponce().c_str(),
-				 tmp->req->getResponce().length(), 0); // buf -> req->getResponce
+		
+		ssize_t sended = send(eventList[i].ident, tmp->req->getResponce().c_str(),
+			tmp->req->getResponce().length(), 0); // buf -> req->getResponce
+		if (sended == -1)
+			printError("send() error");
+
 		tmp->req->makeRequestDefault();
 	}
 	else if (tmp->req->getStatus() == COMPLETED)

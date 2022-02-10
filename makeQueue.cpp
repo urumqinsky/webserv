@@ -25,7 +25,10 @@ void	acceptNewClient(int kq, int i, struct kevent *eventList, htCont *conf)
 
 	newEventFd = accept(eventList[i].ident, (struct sockaddr*) &addr, &addrLen);
 	if (newEventFd == -1)
+	{
+		std::cerr << std::strerror(errno) << std::endl;
 		return (printError("accept() error"));
+	}
 	int opt = 1;
 	setsockopt(newEventFd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 	s_udata *tmp = new s_udata;

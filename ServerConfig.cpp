@@ -44,6 +44,8 @@ void	ServerConfig::checkGeneralContent(genCont &to, genCont &from)
 
 void	ServerConfig::inheritenceHandler()
 {
+	if (httpCont.genH.error_page.empty())
+		httpCont.genH.error_page.insert(std::pair<int, std::string>(404, "/web/errors/404.html"));
 	for (size_t i = 0; i < httpCont.serverList.size(); i++)
 	{
 		checkGeneralContent(httpCont.serverList[i].genS, httpCont.genH);

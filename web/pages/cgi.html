@@ -1,0 +1,32 @@
+<html>
+<head>
+  <title>CGI</title>
+  <style type="text/css">
+    body {
+      background: #333366;
+    }
+    h1 {
+      font-family: Helvetica;
+      color: aliceblue;
+      font-size: 300%;
+    }
+</style>
+</head>
+<body>
+  <h1><CENTER>CGI</CENTER></h1>
+  <form method="POST" action="/cgi-bin/cppcgi.bin"><CENTER>
+    <input name="name" type="text" placeholder="Name" />
+    <input name="login" type="text" placeholder="Login" />
+    <button type="submit">Submit</button>
+    <form method="POST" action="/cgi-bin/gocgi.run"><CENTER>
+      <input name="name" type="text" placeholder="Name" />
+      <input name="login" type="text" placeholder="Login" />
+      <button type="submit">Submit</button>
+      <form method="POST" action="/cgi-bin/ccgi.bla"><CENTER>
+        <input name="name" type="text" placeholder="Name" />
+        <input name="login" type="text" placeholder="Login" />
+        <button type="submit">Submit</button>
+</CENTER>
+  </form>
+</body> 
+</html>
